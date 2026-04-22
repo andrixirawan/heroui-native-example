@@ -9,7 +9,7 @@ export default function IndexScreen() {
     return null;
   }
 
-  const href = (isAuthenticated ? "/demo" : "/(auth)/sign-in") as Href;
+  const href = (isAuthenticated ? "/home" : "/(auth)/sign-in") as Href;
 
   return <Redirect href={href} />;
 }

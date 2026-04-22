@@ -33,7 +33,13 @@ function toUrlOrigin(value: string | null | undefined) {
   }
 
   try {
-    return new URL(value.trim()).origin;
+    const parsed = new URL(value.trim());
+    const isHttp = parsed.protocol === "http:" || parsed.protocol === "https:";
+    if (!isHttp || parsed.origin === "null") {
+      return null;
+    }
+
+    return parsed.origin;
   } catch {
     return null;
   }
@@ -151,9 +157,12 @@ export class AuthApiError extends Error {
 function toAuthApiError(error: unknown, fallbackMessage: string) {
   if (error instanceof AuthApiError) {
     const normalizedMessage = error.message.toLowerCase();
-    if (normalizedMessage.includes("missing or null origin")) {
+    if (
+      normalizedMessage.includes("missing or null origin") ||
+      normalizedMessage.includes("origin not allowed")
+    ) {
       return new AuthApiError(
-        "Backend menolak request karena header Origin tidak ada. Tambahkan origin app ke trusted origins server, lalu set EXPO_PUBLIC_AUTH_ORIGIN di app.",
+        "Origin aplikasi belum diizinkan di backend. Tambahkan origin ke trusted origins server dan set EXPO_PUBLIC_AUTH_ORIGIN dengan URL http/https yang sama.",
         error.status,
         error.code
       );
