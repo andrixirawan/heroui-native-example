@@ -1,50 +1,41 @@
-# Keep EAS upload small; exclude local build/cache artifacts.
-
 # dependencies
 node_modules/
 
-# Expo
+# Expo / React Native generated
 .expo/
 .expo-shared/
 dist/
 web-build/
+android/
+ios/
 expo-env.d.ts
 
-# Native caches/artifacts
+# native build / signing artifacts
 .kotlin/
-android/.gradle/
-android/build/
-android/app/build/
-android/app/.cxx/
-android/**/build/
-android/**/.cxx/
-ios/build/
 *.orig.*
-*.iml
-*.hprof
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
 
 # Metro
 .metro-health-check*
 
-# debug/logs
+# logs
 npm-debug.*
 yarn-debug.*
 yarn-error.*
-*.log
+pnpm-debug.*
 
-# macOS
-.DS_Store
-
-# local env files
+# local environment files
 .env
 .env.*
 !.env.example
-!.env*.example
 
-# typescript
+# TypeScript
 *.tsbuildinfo
 
-# local-only folders
-app-example-src
-.git/
-.vscode/
+# OS/editor
+.DS_Store
