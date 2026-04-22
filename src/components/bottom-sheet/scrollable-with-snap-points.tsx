@@ -4,7 +4,7 @@ import { BottomSheet, Button, Card, cn, Separator } from 'heroui-native';
 import { useCallback, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { withUniwind } from 'uniwind';
-import { useAppTheme } from '../../contexts/app-theme-context';
+import { useAppTheme } from '@/contexts/app-theme-context';
 import { AppText } from '../app-text';
 
 const StyledIonicons = withUniwind(Ionicons);
@@ -280,3 +280,4 @@ export const ScrollableWithSnapPointsContent = () => {
     </View>
   );
 };
+

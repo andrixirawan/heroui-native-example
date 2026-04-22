@@ -19,9 +19,9 @@ import Animated, {
   LinearTransition,
 } from "react-native-reanimated";
 import { withUniwind } from "uniwind";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
-import useHeaderHeight from "../../../../helpers/hooks/use-header-height";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
+import useHeaderHeight from "@/helpers/hooks/use-header-height";
 
 const StyleAnimatedView = withUniwind(Animated.View);
 
@@ -415,3 +415,4 @@ const styles = StyleSheet.create({
     borderCurve: "continuous",
   },
 });
+

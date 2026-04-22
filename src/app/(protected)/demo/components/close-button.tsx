@@ -2,8 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { CloseButton, useThemeColor } from "heroui-native";
 import { View } from "react-native";
 import { withUniwind } from "uniwind";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
 
 const StyledIonicons = withUniwind(Ionicons);
 
@@ -103,3 +103,4 @@ const CLOSE_BUTTON_VARIANTS: UsageVariant[] = [
 export default function CloseButtonScreen() {
   return <UsageVariantFlatList data={CLOSE_BUTTON_VARIANTS} />;
 }
+

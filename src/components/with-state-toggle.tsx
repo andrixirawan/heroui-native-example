@@ -2,7 +2,7 @@ import { ControlField, Description, Label, Separator } from 'heroui-native';
 import { type FC, type ReactNode } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import useHeaderHeight from '../helpers/hooks/use-header-height';
+import useHeaderHeight from '@/helpers/hooks/use-header-height';
 
 /**
  * Props for the WithStateToggle component
@@ -82,3 +82,4 @@ export const WithStateToggle: FC<WithStateToggleProps> = ({
     </View>
   );
 };
+

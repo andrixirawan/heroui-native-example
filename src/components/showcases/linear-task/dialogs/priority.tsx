@@ -14,7 +14,7 @@ import { useState, type FC } from 'react';
 import { Platform, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { withUniwind } from 'uniwind';
-import { useAppTheme } from '../../../../contexts/app-theme-context';
+import { useAppTheme } from '@/contexts/app-theme-context';
 import { DialogBlurBackdrop } from '../../../dialog-blur-backdrop';
 import { DialogHeader } from '../dialog-header';
 
@@ -165,3 +165,4 @@ export const Priority: FC = () => {
     </Dialog>
   );
 };
+

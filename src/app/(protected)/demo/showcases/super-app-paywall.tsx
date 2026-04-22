@@ -6,7 +6,7 @@ import { View } from "react-native";
 import {
   PaywallFooter,
   SuperAppPaywallContent,
-} from "../../../../components/showcases/super-app-paywall/paywall-content";
+} from "@/components/showcases/super-app-paywall/paywall-content";
 
 export default function SuperAppPaywall() {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
@@ -56,3 +56,4 @@ export default function SuperAppPaywall() {
     </View>
   );
 }
+

@@ -1,7 +1,7 @@
 import { Description, Input, Label, TextField } from "heroui-native";
 import { View } from "react-native";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
 
 const BasicContent = () => {
   return (
@@ -41,3 +41,4 @@ const DESCRIPTION_VARIANTS: UsageVariant[] = [
 export default function DescriptionScreen() {
   return <UsageVariantFlatList data={DESCRIPTION_VARIANTS} />;
 }
+

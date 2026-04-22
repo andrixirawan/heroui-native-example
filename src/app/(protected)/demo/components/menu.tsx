@@ -2,22 +2,22 @@ import type { MenuKey } from "heroui-native";
 import { Avatar, Button, cn, Menu, Separator, SubMenu } from "heroui-native";
 import { useState } from "react";
 import { View } from "react-native";
-import { AppText } from "../../../../components/app-text";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
-import { BellIcon } from "../../../../components/icons/bell";
-import { ChevronRightIcon } from "../../../../components/icons/chevron-right";
-import { CopyIcon } from "../../../../components/icons/copy";
-import { GlobeIcon } from "../../../../components/icons/globe";
-import { LockIcon } from "../../../../components/icons/lock";
-import { PaletteIcon } from "../../../../components/icons/palette";
-import { PencilIcon } from "../../../../components/icons/pencil";
-import { PersonIcon } from "../../../../components/icons/person";
-import { PersonFillIcon } from "../../../../components/icons/person-fill";
-import { SquarePlusIcon } from "../../../../components/icons/square-plus";
-import { StarFillIcon } from "../../../../components/icons/star-fill";
-import { TrashIcon } from "../../../../components/icons/trash";
-import { WithStateToggle } from "../../../../components/with-state-toggle";
+import { AppText } from "@/components/app-text";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
+import { BellIcon } from "@/components/icons/bell";
+import { ChevronRightIcon } from "@/components/icons/chevron-right";
+import { CopyIcon } from "@/components/icons/copy";
+import { GlobeIcon } from "@/components/icons/globe";
+import { LockIcon } from "@/components/icons/lock";
+import { PaletteIcon } from "@/components/icons/palette";
+import { PencilIcon } from "@/components/icons/pencil";
+import { PersonIcon } from "@/components/icons/person";
+import { PersonFillIcon } from "@/components/icons/person-fill";
+import { SquarePlusIcon } from "@/components/icons/square-plus";
+import { StarFillIcon } from "@/components/icons/star-fill";
+import { TrashIcon } from "@/components/icons/trash";
+import { WithStateToggle } from "@/components/with-state-toggle";
 
 const BasicUsageContent = () => {
   const [isBottomSheet, setIsBottomSheet] = useState(false);
@@ -711,3 +711,4 @@ const MENU_VARIANTS: UsageVariant[] = [
 export default function MenuScreen() {
   return <UsageVariantFlatList data={MENU_VARIANTS} />;
 }
+

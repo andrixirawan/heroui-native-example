@@ -14,12 +14,12 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Uniwind, useUniwind, withUniwind } from "uniwind";
-import BG from "../../../../assets/images/paywall-showcase-bg.jpeg";
-import LogoDark from "../../../../assets/logo-dark.png";
-import { AppText } from "../../../../components/app-text";
-import { StyledControlField } from "../../../../components/showcases/paywall/styled-control-field";
-import { StyledRadio } from "../../../../components/showcases/paywall/styled-radio";
-import { simulatePress } from "../../../../helpers/utils/simulate-press";
+import BG from "@assets/images/paywall-showcase-bg.jpeg";
+import LogoDark from "@assets/logo-dark.png";
+import { AppText } from "@/components/app-text";
+import { StyledControlField } from "@/components/showcases/paywall/styled-control-field";
+import { StyledRadio } from "@/components/showcases/paywall/styled-radio";
+import { simulatePress } from "@/helpers/utils/simulate-press";
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 const StyledFeather = withUniwind(Feather);
@@ -166,3 +166,4 @@ const styles = StyleSheet.create({
     opacity: 0.9,
   },
 });
+

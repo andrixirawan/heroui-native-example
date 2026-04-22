@@ -4,7 +4,7 @@ import { cn, Select, useSelect } from 'heroui-native';
 import { type FC } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { withUniwind } from 'uniwind';
-import { useAppTheme } from '../../../../contexts/app-theme-context';
+import { useAppTheme } from '@/contexts/app-theme-context';
 import { AppText } from '../../../app-text';
 import { type ModelOption } from './types';
 
@@ -74,3 +74,4 @@ const styles = StyleSheet.create({
     borderCurve: 'continuous',
   },
 });
+

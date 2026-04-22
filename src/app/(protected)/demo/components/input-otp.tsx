@@ -12,10 +12,10 @@ import {
 } from "heroui-native";
 import { useRef, useState, type RefObject } from "react";
 import { View } from "react-native";
-import { WithOTPInputContent } from "../../../../components/bottom-sheet/with-otp-input";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
-import { simulatePress } from "../../../../helpers/utils/simulate-press";
+import { WithOTPInputContent } from "@/components/bottom-sheet/with-otp-input";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
+import { simulatePress } from "@/helpers/utils/simulate-press";
 
 const useOnComplete = ({ ref }: { ref: RefObject<InputOTPRef | null> }) => {
   const { toast } = useToast();
@@ -400,3 +400,4 @@ const INPUT_OTP_VARIANTS: UsageVariant[] = [
 export default function InputOTPScreen() {
   return <UsageVariantFlatList data={INPUT_OTP_VARIANTS} />;
 }
+

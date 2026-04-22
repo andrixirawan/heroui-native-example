@@ -1,12 +1,12 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { Chip } from "heroui-native";
 import { StyleSheet, View } from "react-native";
-import { AppText } from "../../../../components/app-text";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
-import { PlusIcon } from "../../../../components/icons/plus";
-import { StarFillIcon } from "../../../../components/icons/star-fill";
-import { XMarkIcon } from "../../../../components/icons/x-mark";
+import { AppText } from "@/components/app-text";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
+import { PlusIcon } from "@/components/icons/plus";
+import { StarFillIcon } from "@/components/icons/star-fill";
+import { XMarkIcon } from "@/components/icons/x-mark";
 
 const SizesContent = () => {
   return (
@@ -350,3 +350,4 @@ const CHIP_VARIANTS: UsageVariant[] = [
 export default function ChipScreen() {
   return <UsageVariantFlatList data={CHIP_VARIANTS} />;
 }
+

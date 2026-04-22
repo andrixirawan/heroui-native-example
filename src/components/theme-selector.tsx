@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { useUniwind } from 'uniwind';
-import { useAppTheme } from '../contexts/app-theme-context';
+import { useAppTheme } from '@/contexts/app-theme-context';
 
 type ThemeOption = {
   id: string;
@@ -162,3 +162,4 @@ export const ThemeSelectorBar: React.FC = () => {
     </View>
   );
 };
+

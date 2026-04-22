@@ -11,12 +11,12 @@ import {
 import React, { useMemo, useState } from "react";
 import { View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
-import { AppText } from "../../../../components/app-text";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
-import { GlobeIcon } from "../../../../components/icons/globe";
-import { RocketIcon } from "../../../../components/icons/rocket";
-import { SquareArticleIcon } from "../../../../components/icons/square-article";
+import { AppText } from "@/components/app-text";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
+import { GlobeIcon } from "@/components/icons/globe";
+import { RocketIcon } from "@/components/icons/rocket";
+import { SquareArticleIcon } from "@/components/icons/square-article";
 
 const AnimatedTagGroupItem = Animated.createAnimatedComponent(TagGroup.Item);
 const AnimatedChip = Animated.createAnimatedComponent(Chip);
@@ -569,3 +569,4 @@ const TAG_GROUP_VARIANTS: UsageVariant[] = [
 export default function TagGroupScreen() {
   return <UsageVariantFlatList data={TAG_GROUP_VARIANTS} />;
 }
+

@@ -11,8 +11,8 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from "react-native-reanimated";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
 
 const KeyboardAvoidingContainer = ({
   children,
@@ -171,3 +171,4 @@ const TEXT_AREA_VARIANTS: UsageVariant[] = [
 export default function TextAreaScreen() {
   return <UsageVariantFlatList data={TEXT_AREA_VARIANTS} />;
 }
+

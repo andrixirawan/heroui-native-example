@@ -16,11 +16,11 @@ import Animated, {
   ZoomIn,
 } from "react-native-reanimated";
 import { withUniwind } from "uniwind";
-import { AppText } from "../../../../components/app-text";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
-import { BellFillIcon } from "../../../../components/icons/bell-fill";
-import { ThunderboltFillIcon } from "../../../../components/icons/thunderbolt-fill";
+import { AppText } from "@/components/app-text";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
+import { BellFillIcon } from "@/components/icons/bell-fill";
+import { ThunderboltFillIcon } from "@/components/icons/thunderbolt-fill";
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 const StyleAnimatedView = withUniwind(Animated.View);
@@ -571,3 +571,4 @@ const RADIO_GROUP_VARIANTS: UsageVariant[] = [
 export default function RadioGroupScreen() {
   return <UsageVariantFlatList data={RADIO_GROUP_VARIANTS} />;
 }
+

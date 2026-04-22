@@ -3,9 +3,9 @@ import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { Avatar, cn } from "heroui-native";
 import { StyleSheet, Text, View } from "react-native";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
-import { PersonFillIcon } from "../../../../components/icons/person-fill";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
+import { PersonFillIcon } from "@/components/icons/person-fill";
 
 const SizesContent = () => {
   return (
@@ -391,3 +391,4 @@ const AVATAR_VARIANTS: UsageVariant[] = [
 export default function AvatarScreen() {
   return <UsageVariantFlatList data={AVATAR_VARIANTS} />;
 }
+

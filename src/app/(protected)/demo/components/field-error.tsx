@@ -2,13 +2,13 @@ import { FieldError, Input, Label, TextField } from "heroui-native";
 import { useState } from "react";
 import { View } from "react-native";
 import { FadeInDown } from "react-native-reanimated";
-import { AppText } from "../../../../components/app-text";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
-import { CircleInfoFillIcon } from "../../../../components/icons/circle-info-fill";
-import { DiamondExclamationFillIcon } from "../../../../components/icons/diamond-exclamation-fill";
-import { XMarkFillIcon } from "../../../../components/icons/x-mark-fill";
-import { WithStateToggle } from "../../../../components/with-state-toggle";
+import { AppText } from "@/components/app-text";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
+import { CircleInfoFillIcon } from "@/components/icons/circle-info-fill";
+import { DiamondExclamationFillIcon } from "@/components/icons/diamond-exclamation-fill";
+import { XMarkFillIcon } from "@/components/icons/x-mark-fill";
+import { WithStateToggle } from "@/components/with-state-toggle";
 
 const BasicFieldErrorContent = () => {
   const [slideError, setSlideError] = useState(false);
@@ -251,3 +251,4 @@ const FIELD_ERROR_VARIANTS: UsageVariant[] = [
 export default function FieldErrorScreen() {
   return <UsageVariantFlatList data={FIELD_ERROR_VARIANTS} />;
 }
+

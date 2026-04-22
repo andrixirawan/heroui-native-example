@@ -6,9 +6,9 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from "react-native-reanimated";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
-import { WithStateToggle } from "../../../../components/with-state-toggle";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
+import { WithStateToggle } from "@/components/with-state-toggle";
 
 const KeyboardAvoidingContainer = ({
   children,
@@ -208,3 +208,4 @@ const SEARCH_FIELD_VARIANTS: UsageVariant[] = [
 export default function SearchFieldScreen() {
   return <UsageVariantFlatList data={SEARCH_FIELD_VARIANTS} />;
 }
+

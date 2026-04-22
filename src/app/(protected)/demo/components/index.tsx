@@ -8,8 +8,8 @@ import {
 } from "heroui-native";
 import { Fragment, useEffect } from "react";
 import { Platform, View } from "react-native";
-import { ScreenScrollView } from "../../../../components/screen-scroll-view";
-import { COMPONENTS } from "../../../../helpers/data/components";
+import { ScreenScrollView } from "@/components/screen-scroll-view";
+import { COMPONENTS } from "@/helpers/data/components";
 
 export default function App() {
   const router = useRouter();
@@ -59,3 +59,4 @@ export default function App() {
     </ScreenScrollView>
   );
 }
+

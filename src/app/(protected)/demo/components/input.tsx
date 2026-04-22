@@ -11,8 +11,8 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from "react-native-reanimated";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
 
 const KeyboardAvoidingContainer = ({
   children,
@@ -164,3 +164,4 @@ const INPUT_VARIANTS: UsageVariant[] = [
 export default function InputScreen() {
   return <UsageVariantFlatList data={INPUT_VARIANTS} />;
 }
+

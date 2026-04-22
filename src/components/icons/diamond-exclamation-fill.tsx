@@ -1,7 +1,7 @@
 import React from 'react';
 import Svg, { ClipPath, Defs, G, Path, Rect } from 'react-native-svg';
 import { withUniwind } from 'uniwind';
-import type { IconProps } from '../../helpers/types/icons';
+import type { IconProps } from '@/helpers/types/icons';
 
 /**
  * DiamondExclamationFill icon component - React Native SVG implementation
@@ -56,3 +56,4 @@ export const DiamondExclamationFillIcon = withUniwind(
     },
   }
 );
+

@@ -20,17 +20,17 @@ import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { withUniwind } from "uniwind";
-import BgImage from "../../../../assets/images/pancakes.jpg";
-import { AppText } from "../../../../components/app-text";
-import { Ask } from "../../../../components/showcases/cooking-onboarding/ask";
-import { Author } from "../../../../components/showcases/cooking-onboarding/author";
-import { Cook } from "../../../../components/showcases/cooking-onboarding/cook";
-import { Highlights } from "../../../../components/showcases/cooking-onboarding/highlights";
-import { Ingridients } from "../../../../components/showcases/cooking-onboarding/ingridients";
-import ParallaxScrollView from "../../../../components/showcases/cooking-onboarding/parallax-scroll-view";
-import { Plan } from "../../../../components/showcases/cooking-onboarding/plan";
-import { Save } from "../../../../components/showcases/cooking-onboarding/save";
-import { Share } from "../../../../components/showcases/cooking-onboarding/share";
+import BgImage from "@assets/images/pancakes.jpg";
+import { AppText } from "@/components/app-text";
+import { Ask } from "@/components/showcases/cooking-onboarding/ask";
+import { Author } from "@/components/showcases/cooking-onboarding/author";
+import { Cook } from "@/components/showcases/cooking-onboarding/cook";
+import { Highlights } from "@/components/showcases/cooking-onboarding/highlights";
+import { Ingridients } from "@/components/showcases/cooking-onboarding/ingridients";
+import ParallaxScrollView from "@/components/showcases/cooking-onboarding/parallax-scroll-view";
+import { Plan } from "@/components/showcases/cooking-onboarding/plan";
+import { Save } from "@/components/showcases/cooking-onboarding/save";
+import { Share } from "@/components/showcases/cooking-onboarding/share";
 
 const StyledAnimatedView = withUniwind(Animated.View);
 const StyledFeather = withUniwind(Feather);
@@ -237,3 +237,4 @@ const styles = StyleSheet.create({
     pointerEvents: "none",
   },
 });
+

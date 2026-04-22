@@ -3,7 +3,7 @@ import * as Updates from 'expo-updates';
 import { BottomSheet, Button } from 'heroui-native';
 import type { FC } from 'react';
 import { Platform, View } from 'react-native';
-import { APP_STORE_URL } from '../../helpers/utils/version-check';
+import { APP_STORE_URL } from '@/helpers/utils/version-check';
 
 export type UpdateBottomSheetMode = 'new-version' | 'ota-update';
 
@@ -90,3 +90,4 @@ export const UpdateBottomSheet: FC<UpdateBottomSheetProps> = ({
     </BottomSheet>
   );
 };
+

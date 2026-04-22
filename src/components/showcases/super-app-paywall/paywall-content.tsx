@@ -17,8 +17,8 @@ import {
 import { useState } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAppTheme } from '../../../contexts/app-theme-context';
-import { simulatePress } from '../../../helpers/utils/simulate-press';
+import { useAppTheme } from '@/contexts/app-theme-context';
+import { simulatePress } from '@/helpers/utils/simulate-press';
 import { AppTabContent } from './app-tab-content';
 import { SuperTabContent } from './super-tab-content';
 
@@ -171,3 +171,4 @@ export function SuperAppPaywallContent() {
     </BottomSheetScrollView>
   );
 }
+

@@ -34,7 +34,7 @@ import {
   KeyboardProvider,
 } from 'react-native-keyboard-controller';
 import '../../global.css';
-import { AppThemeProvider } from '../contexts/app-theme-context';
+import { AppThemeProvider } from '@/contexts/app-theme-context';
 
 SplashScreen.setOptions({
   duration: 300,
@@ -119,3 +119,4 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
+

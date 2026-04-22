@@ -12,16 +12,16 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { withUniwind } from "uniwind";
-import HomeComponentsDark from "../../../assets/images/home-components-dark.png";
-import HomeComponentsLight from "../../../assets/images/home-components-light.png";
-import HomeShowcasesDark from "../../../assets/images/home-showcases-dark.png";
-import HomeShowcasesLight from "../../../assets/images/home-showcases-light.png";
-import HomeThemesDark from "../../../assets/images/home-themes-dark.png";
-import HomeThemesLight from "../../../assets/images/home-themes-light.png";
-import { AppText } from "../../../components/app-text";
-import { ScreenScrollView } from "../../../components/screen-scroll-view";
-import { useAppTheme } from "../../../contexts/app-theme-context";
-import { COMPONENTS } from "../../../helpers/data/components";
+import HomeComponentsDark from "@assets/images/home-components-dark.png";
+import HomeComponentsLight from "@assets/images/home-components-light.png";
+import HomeShowcasesDark from "@assets/images/home-showcases-dark.png";
+import HomeShowcasesLight from "@assets/images/home-showcases-light.png";
+import HomeThemesDark from "@assets/images/home-themes-dark.png";
+import HomeThemesLight from "@assets/images/home-themes-light.png";
+import { AppText } from "@/components/app-text";
+import { ScreenScrollView } from "@/components/screen-scroll-view";
+import { useAppTheme } from "@/contexts/app-theme-context";
+import { COMPONENTS } from "@/helpers/data/components";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const AnimatedImage = Animated.createAnimatedComponent(Image);
@@ -181,3 +181,4 @@ export default function App() {
     </ScreenScrollView>
   );
 }
+

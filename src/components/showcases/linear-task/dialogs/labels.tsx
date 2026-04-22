@@ -8,7 +8,7 @@ import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { withUniwind } from 'uniwind';
-import { useAppTheme } from '../../../../contexts/app-theme-context';
+import { useAppTheme } from '@/contexts/app-theme-context';
 import { AppText } from '../../../app-text';
 import { DialogBlurBackdrop } from '../../../dialog-blur-backdrop';
 import { DialogHeader } from '../dialog-header';
@@ -225,3 +225,4 @@ export const Labels: FC = () => {
     </Dialog>
   );
 };
+

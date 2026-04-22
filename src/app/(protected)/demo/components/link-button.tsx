@@ -1,9 +1,9 @@
 import { Button, Checkbox, ControlField, LinkButton } from "heroui-native";
 import React from "react";
 import { Alert, View } from "react-native";
-import { AppText } from "../../../../components/app-text";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
+import { AppText } from "@/components/app-text";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
 
 const TermsAndPrivacyContent = () => {
   const [isAgreed, setIsAgreed] = React.useState(false);
@@ -75,3 +75,4 @@ const LINK_BUTTON_VARIANTS: UsageVariant[] = [
 export default function LinkButtonScreen() {
   return <UsageVariantFlatList data={LINK_BUTTON_VARIANTS} />;
 }
+

@@ -13,16 +13,16 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from "react-native-reanimated";
-import { AppText } from "../../../../components/app-text";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
-import { CreditCardIcon } from "../../../../components/icons/credit-card";
-import { EyeIcon } from "../../../../components/icons/eye";
-import { EyeSlashIcon } from "../../../../components/icons/eye-slash";
-import { GlobeIcon } from "../../../../components/icons/globe";
-import { LockIcon } from "../../../../components/icons/lock";
-import { MagnifierIcon } from "../../../../components/icons/magnifier";
-import { PersonIcon } from "../../../../components/icons/person";
+import { AppText } from "@/components/app-text";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
+import { CreditCardIcon } from "@/components/icons/credit-card";
+import { EyeIcon } from "@/components/icons/eye";
+import { EyeSlashIcon } from "@/components/icons/eye-slash";
+import { GlobeIcon } from "@/components/icons/globe";
+import { LockIcon } from "@/components/icons/lock";
+import { MagnifierIcon } from "@/components/icons/magnifier";
+import { PersonIcon } from "@/components/icons/person";
 
 type DialCodeOption = {
   value: string;
@@ -294,3 +294,4 @@ const INPUT_GROUP_VARIANTS: UsageVariant[] = [
 export default function InputGroupScreen() {
   return <UsageVariantFlatList data={INPUT_GROUP_VARIANTS} />;
 }
+

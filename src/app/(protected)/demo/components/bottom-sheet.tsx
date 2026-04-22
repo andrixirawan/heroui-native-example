@@ -5,14 +5,14 @@ import { useState } from "react";
 import { Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { withUniwind } from "uniwind";
-import { AppText } from "../../../../components/app-text";
-import { BottomSheetBlurOverlay } from "../../../../components/bottom-sheet-blur-overlay";
-import { BasicBottomSheetContent } from "../../../../components/bottom-sheet/basic";
-import { ScrollableWithSnapPointsContent } from "../../../../components/bottom-sheet/scrollable-with-snap-points";
-import { WithOTPInputContent } from "../../../../components/bottom-sheet/with-otp-input";
-import { WithTextInputContent } from "../../../../components/bottom-sheet/with-text-input";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
+import { AppText } from "@/components/app-text";
+import { BottomSheetBlurOverlay } from "@/components/bottom-sheet-blur-overlay";
+import { BasicBottomSheetContent } from "@/components/bottom-sheet/basic";
+import { ScrollableWithSnapPointsContent } from "@/components/bottom-sheet/scrollable-with-snap-points";
+import { WithOTPInputContent } from "@/components/bottom-sheet/with-otp-input";
+import { WithTextInputContent } from "@/components/bottom-sheet/with-text-input";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
 
 const StyledFontAwesome5 = withUniwind(FontAwesome5);
 
@@ -259,3 +259,4 @@ export default function BottomSheetScreen() {
     />
   );
 }
+

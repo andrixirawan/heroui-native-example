@@ -1,5 +1,5 @@
 import { View } from "react-native";
-import { BasicBottomSheetContent } from "../../../../components/bottom-sheet/basic";
+import { BasicBottomSheetContent } from "@/components/bottom-sheet/basic";
 
 export default function BottomSheetNativeModalScreen() {
   return (
@@ -10,3 +10,4 @@ export default function BottomSheetNativeModalScreen() {
     </View>
   );
 }
+

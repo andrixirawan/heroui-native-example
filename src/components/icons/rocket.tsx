@@ -1,7 +1,7 @@
 import React from 'react';
 import Svg, { ClipPath, Defs, G, Path, Rect } from 'react-native-svg';
 import { withUniwind } from 'uniwind';
-import type { IconProps } from '../../helpers/types/icons';
+import type { IconProps } from '@/helpers/types/icons';
 
 const ROCKET_CLIP_PATH_ID = 'rocket-clip';
 
@@ -53,3 +53,4 @@ export const RocketIcon = withUniwind(RocketIconComponent, {
     styleProperty: 'accentColor',
   },
 });
+

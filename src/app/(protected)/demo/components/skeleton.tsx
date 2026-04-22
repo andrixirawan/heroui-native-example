@@ -13,10 +13,10 @@ import {
 import { useState } from "react";
 import { Image, Text, View } from "react-native";
 import Animated, { FadeInLeft, FadeOutRight } from "react-native-reanimated";
-import { AppText } from "../../../../components/app-text";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
-import { WithStateToggle } from "../../../../components/with-state-toggle";
+import { AppText } from "@/components/app-text";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
+import { WithStateToggle } from "@/components/with-state-toggle";
 
 const SkeletonControls = ({
   variant,
@@ -484,3 +484,4 @@ const SKELETON_VARIANTS: UsageVariant[] = [
 export default function SkeletonScreen() {
   return <UsageVariantFlatList data={SKELETON_VARIANTS} />;
 }
+

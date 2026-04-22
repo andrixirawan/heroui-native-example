@@ -1,6 +1,6 @@
 import { Button, useThemeColor, useToast } from "heroui-native";
 import { View } from "react-native";
-import { Logo } from "../../../../components/logo";
+import { Logo } from "@/components/logo";
 
 export default function ToastNativeModalScreen() {
   const { toast } = useToast();
@@ -40,3 +40,4 @@ export default function ToastNativeModalScreen() {
     </View>
   );
 }
+

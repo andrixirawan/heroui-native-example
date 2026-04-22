@@ -3,7 +3,7 @@ import { Avatar } from 'heroui-native';
 import { type FC } from 'react';
 import { Pressable, View } from 'react-native';
 import { withUniwind } from 'uniwind';
-import { simulatePress } from '../../../helpers/utils/simulate-press';
+import { simulatePress } from '@/helpers/utils/simulate-press';
 import { AppText } from '../../app-text';
 
 const StyledFeather = withUniwind(Feather);
@@ -34,3 +34,4 @@ export const Author: FC = () => {
     </Pressable>
   );
 };
+

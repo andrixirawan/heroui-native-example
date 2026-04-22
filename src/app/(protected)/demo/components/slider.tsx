@@ -2,8 +2,8 @@
 import { BottomSheet, Button, Label, Slider } from "heroui-native";
 import { useState } from "react";
 import { View } from "react-native";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
 
 // ==============================================================================
 // Basic
@@ -354,3 +354,4 @@ const SLIDER_VARIANTS: UsageVariant[] = [
 export default function SliderScreen() {
   return <UsageVariantFlatList data={SLIDER_VARIANTS} />;
 }
+

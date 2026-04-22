@@ -7,11 +7,11 @@ import { useState, type FC } from "react";
 import { Alert, Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { withUniwind } from "uniwind";
-import { AppText } from "../../../../components/app-text";
-import { ModelSelect } from "../../../../components/showcases/raycast/model-select";
-import type { ModelOption } from "../../../../components/showcases/raycast/model-select/types";
-import { useAppTheme } from "../../../../contexts/app-theme-context";
-import { simulatePress } from "../../../../helpers/utils/simulate-press";
+import { AppText } from "@/components/app-text";
+import { ModelSelect } from "@/components/showcases/raycast/model-select";
+import type { ModelOption } from "@/components/showcases/raycast/model-select/types";
+import { useAppTheme } from "@/contexts/app-theme-context";
+import { simulatePress } from "@/helpers/utils/simulate-press";
 
 const StyledFeather = withUniwind(Feather);
 const StyledFontAwesome6 = withUniwind(FontAwesome6);
@@ -186,3 +186,4 @@ const styles = StyleSheet.create({
     borderCurve: "continuous",
   },
 });
+

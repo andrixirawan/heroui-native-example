@@ -1,7 +1,7 @@
 import React from 'react';
 import Svg, { Path, Rect } from 'react-native-svg';
 import { withUniwind } from 'uniwind';
-import type { IconProps } from '../../helpers/types/icons';
+import type { IconProps } from '@/helpers/types/icons';
 
 /**
  * Box icon component - React Native SVG implementation
@@ -42,3 +42,4 @@ export const BoxIcon = withUniwind(BoxIconComponent, {
     styleProperty: 'accentColor',
   },
 });
+

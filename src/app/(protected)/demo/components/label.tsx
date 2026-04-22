@@ -1,7 +1,7 @@
 import { FieldError, Input, Label, TextField } from "heroui-native";
 import { View } from "react-native";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
 
 const BasicAndRequiredContent = () => {
   return (
@@ -59,3 +59,4 @@ const LABEL_VARIANTS: UsageVariant[] = [
 export default function LabelScreen() {
   return <UsageVariantFlatList data={LABEL_VARIANTS} />;
 }
+

@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { withUniwind } from "uniwind";
-import { Carousel } from "../../../../components/showcase-carousel";
+import { Carousel } from "@/components/showcase-carousel";
 
 const StyledIonicons = withUniwind(Ionicons);
 const data = [
@@ -150,3 +150,4 @@ const styles = StyleSheet.create({
     padding: 8,
   },
 });
+

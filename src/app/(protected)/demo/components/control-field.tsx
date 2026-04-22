@@ -11,8 +11,8 @@ import React from "react";
 import { View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { withUniwind } from "uniwind";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
 
 const StyleAnimatedView = withUniwind(Animated.View);
 interface SwitchFieldProps {
@@ -406,3 +406,4 @@ const CONTROL_FIELD_VARIANTS: UsageVariant[] = [
 export default function ControlFieldScreen() {
   return <UsageVariantFlatList data={CONTROL_FIELD_VARIANTS} />;
 }
+

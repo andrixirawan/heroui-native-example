@@ -9,21 +9,21 @@ import {
 import { useCallback, useRef, useState } from "react";
 import { Platform, TextInput, View } from "react-native";
 import { withUniwind } from "uniwind";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
-import { CircleInfoFillIcon } from "../../../../components/icons/circle-info-fill";
-import { ShieldCheckIcon } from "../../../../components/icons/shield-check";
-import { ShieldExclamationIcon } from "../../../../components/icons/shield-exclamation";
-import { Logo } from "../../../../components/logo";
-import { AchievementToast } from "../../../../components/toast/achievement-toast";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
+import { CircleInfoFillIcon } from "@/components/icons/circle-info-fill";
+import { ShieldCheckIcon } from "@/components/icons/shield-check";
+import { ShieldExclamationIcon } from "@/components/icons/shield-exclamation";
+import { Logo } from "@/components/logo";
+import { AchievementToast } from "@/components/toast/achievement-toast";
 import {
   LoadingToast,
   useLoadingState,
-} from "../../../../components/toast/loading-toast";
+} from "@/components/toast/loading-toast";
 import {
   ProgressToast,
   useProgressState,
-} from "../../../../components/toast/progress-toast";
+} from "@/components/toast/progress-toast";
 
 const StyledFeather = withUniwind(Feather);
 
@@ -583,3 +583,4 @@ export default function ToastScreen() {
     />
   );
 }
+

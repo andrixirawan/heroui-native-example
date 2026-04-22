@@ -3,9 +3,9 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Button, Card, cn, type CardRootProps } from "heroui-native";
 import { Image, Pressable, StyleSheet, View } from "react-native";
 import { withUniwind } from "uniwind";
-import { AppText } from "../../../../components/app-text";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
+import { AppText } from "@/components/app-text";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
 
 const StyledImage = withUniwind(Image);
 const StyledIonicons = withUniwind(Ionicons);
@@ -367,3 +367,4 @@ const CARD_VARIANTS: UsageVariant[] = [
 export default function CardScreen() {
   return <UsageVariantFlatList data={CARD_VARIANTS} />;
 }
+

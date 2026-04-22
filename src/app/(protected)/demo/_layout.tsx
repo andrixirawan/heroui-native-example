@@ -4,14 +4,14 @@ import { useThemeColor, useToast } from "heroui-native";
 import { useCallback, useEffect, useState } from "react";
 import { Image, Platform, StyleSheet, View } from "react-native";
 import { useReducedMotion } from "react-native-reanimated";
-import LogoDark from "../../../assets/logo-dark.png";
-import LogoLight from "../../../assets/logo-light.png";
-import { type UpdateBottomSheetMode } from "../../../components/bottom-sheet/update-bottom-sheet";
-import { ThemeToggle } from "../../../components/theme-toggle";
-import { useAppTheme } from "../../../contexts/app-theme-context";
-import { COMPONENTS } from "../../../helpers/data/components";
-import { useOtaUpdate } from "../../../helpers/hooks/use-ota-update";
-import { useVersionCheck } from "../../../helpers/hooks/use-version-check";
+import LogoDark from "@assets/logo-dark.png";
+import LogoLight from "@assets/logo-light.png";
+import { type UpdateBottomSheetMode } from "@/components/bottom-sheet/update-bottom-sheet";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { useAppTheme } from "@/contexts/app-theme-context";
+import { COMPONENTS } from "@/helpers/data/components";
+import { useOtaUpdate } from "@/helpers/hooks/use-ota-update";
+import { useVersionCheck } from "@/helpers/hooks/use-version-check";
 
 export default function Layout() {
   const { isDark } = useAppTheme();
@@ -174,3 +174,4 @@ const styles = StyleSheet.create({
     height: 24,
   },
 });
+

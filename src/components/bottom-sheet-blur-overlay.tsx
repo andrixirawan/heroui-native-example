@@ -4,7 +4,7 @@ import Animated, {
   interpolate,
   useDerivedValue,
 } from 'react-native-reanimated';
-import { useAppTheme } from '../contexts/app-theme-context';
+import { useAppTheme } from '@/contexts/app-theme-context';
 import { AnimatedBlurView } from './animated-blur-view';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -35,3 +35,4 @@ export const BottomSheetBlurOverlay = () => {
     </AnimatedPressable>
   );
 };
+

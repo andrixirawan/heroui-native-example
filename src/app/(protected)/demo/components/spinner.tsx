@@ -2,8 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { Spinner } from "heroui-native";
 import { Text, View } from "react-native";
 import { withUniwind } from "uniwind";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
 
 const StyledIonicons = withUniwind(Ionicons);
 
@@ -141,3 +141,4 @@ const SPINNER_VARIANTS: UsageVariant[] = [
 export default function SpinnerScreen() {
   return <UsageVariantFlatList data={SPINNER_VARIANTS} />;
 }
+

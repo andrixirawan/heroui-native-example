@@ -20,8 +20,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { scheduleOnRN } from 'react-native-worklets';
-import { useAppTheme } from '../../contexts/app-theme-context';
-import { useAccessibilityInfo } from '../../helpers/hooks/use-accessability-info';
+import { useAppTheme } from '@/contexts/app-theme-context';
+import { useAccessibilityInfo } from '@/helpers/hooks/use-accessability-info';
 import { PaginationIndicator } from './pagination-indicator';
 import type { UsageVariant } from './types';
 import { UsageVariantsSelect } from './usage-variants-select';
@@ -227,3 +227,4 @@ export const UsageVariantFlatList = ({
     </>
   );
 };
+

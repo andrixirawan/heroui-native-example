@@ -1,8 +1,8 @@
 import { cn, Surface, type SurfaceRootProps } from "heroui-native";
 import { View } from "react-native";
-import { AppText } from "../../../../components/app-text";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
+import { AppText } from "@/components/app-text";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
 
 type SurfaceItemProps = {
   variant: SurfaceRootProps["variant"];
@@ -75,3 +75,4 @@ const SURFACE_VARIANTS: UsageVariant[] = [
 export default function SurfaceScreen() {
   return <UsageVariantFlatList data={SURFACE_VARIANTS} />;
 }
+

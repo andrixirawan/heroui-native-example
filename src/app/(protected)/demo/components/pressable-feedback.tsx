@@ -3,10 +3,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Button, Card, PressableFeedback } from "heroui-native";
 import { StyleSheet, View } from "react-native";
 import { withUniwind } from "uniwind";
-import { AppText } from "../../../../components/app-text";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
-import { simulatePress } from "../../../../helpers/utils/simulate-press";
+import { AppText } from "@/components/app-text";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
+import { simulatePress } from "@/helpers/utils/simulate-press";
 
 const StyledImage = withUniwind(Image);
 
@@ -228,3 +228,4 @@ const PRESSABLE_FEEDBACK_VARIANTS: UsageVariant[] = [
 export default function PressableFeedbackScreen() {
   return <UsageVariantFlatList data={PRESSABLE_FEEDBACK_VARIANTS} />;
 }
+

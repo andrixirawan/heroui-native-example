@@ -13,13 +13,13 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from "react-native-reanimated";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
-import { EyeIcon } from "../../../../components/icons/eye";
-import { EyeSlashIcon } from "../../../../components/icons/eye-slash";
-import { LockIcon } from "../../../../components/icons/lock";
-import { WithStateToggle } from "../../../../components/with-state-toggle";
-import { useAppTheme } from "../../../../contexts/app-theme-context";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
+import { EyeIcon } from "@/components/icons/eye";
+import { EyeSlashIcon } from "@/components/icons/eye-slash";
+import { LockIcon } from "@/components/icons/lock";
+import { WithStateToggle } from "@/components/with-state-toggle";
+import { useAppTheme } from "@/contexts/app-theme-context";
 
 const KeyboardAvoidingContainer = ({
   children,
@@ -211,3 +211,4 @@ const TEXT_FIELD_VARIANTS: UsageVariant[] = [
 export default function TextFieldScreen() {
   return <UsageVariantFlatList data={TEXT_FIELD_VARIANTS} />;
 }
+

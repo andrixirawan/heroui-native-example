@@ -1,7 +1,7 @@
 import { useSelect, useSelectAnimation } from 'heroui-native';
 import { Pressable, StyleSheet } from 'react-native';
 import { interpolate, useDerivedValue } from 'react-native-reanimated';
-import { useAppTheme } from '../../contexts/app-theme-context';
+import { useAppTheme } from '@/contexts/app-theme-context';
 import { AnimatedBlurView } from '../animated-blur-view';
 
 type Props = {
@@ -45,3 +45,4 @@ export const SelectBlurBackdrop = ({ maxIntensity }: Props) => {
     </Pressable>
   );
 };
+

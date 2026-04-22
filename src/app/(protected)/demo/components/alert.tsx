@@ -1,7 +1,7 @@
 import { Alert, Button, CloseButton, Spinner } from "heroui-native";
 import { View } from "react-native";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
 
 const DefaultAndAccentContent = () => {
   return (
@@ -186,3 +186,4 @@ const ALERT_VARIANTS: UsageVariant[] = [
 export default function AlertScreen() {
   return <UsageVariantFlatList data={ALERT_VARIANTS} />;
 }
+

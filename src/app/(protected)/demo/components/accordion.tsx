@@ -7,16 +7,16 @@ import Animated, {
   ZoomIn,
   ZoomOut,
 } from "react-native-reanimated";
-import { AccordionWithDepthEffect } from "../../../../components/accordion/accordion-with-depth-effect";
-import { AppText } from "../../../../components/app-text";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
-import { BoxIcon } from "../../../../components/icons/box";
-import { MinusIcon } from "../../../../components/icons/minus";
-import { PlanetEarthIcon } from "../../../../components/icons/planet-earth";
-import { PlusIcon } from "../../../../components/icons/plus";
-import { ReceiptIcon } from "../../../../components/icons/receipt";
-import { ShoppingBagIcon } from "../../../../components/icons/shopping-bag";
+import { AccordionWithDepthEffect } from "@/components/accordion/accordion-with-depth-effect";
+import { AppText } from "@/components/app-text";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
+import { BoxIcon } from "@/components/icons/box";
+import { MinusIcon } from "@/components/icons/minus";
+import { PlanetEarthIcon } from "@/components/icons/planet-earth";
+import { PlusIcon } from "@/components/icons/plus";
+import { ReceiptIcon } from "@/components/icons/receipt";
+import { ShoppingBagIcon } from "@/components/icons/shopping-bag";
 
 const TriggerTitle = ({ title }: { title: string }) => {
   return (
@@ -349,3 +349,4 @@ const ACCORDION_VARIANTS: UsageVariant[] = [
 export default function AccordionScreen() {
   return <UsageVariantFlatList data={ACCORDION_VARIANTS} />;
 }
+

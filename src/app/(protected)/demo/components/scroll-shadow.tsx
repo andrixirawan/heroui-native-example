@@ -8,8 +8,8 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
 
 const VerticalContent = () => {
   const { height } = useWindowDimensions();
@@ -221,3 +221,4 @@ export default function ScrollShadowScreen() {
     <UsageVariantFlatList data={SCROLL_SHADOW_VARIANTS} scrollEnabled={false} />
   );
 }
+

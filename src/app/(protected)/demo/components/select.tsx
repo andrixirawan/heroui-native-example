@@ -11,12 +11,12 @@ import {
 import React, { useState } from "react";
 import { Platform, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import { AppText } from "../../../../components/app-text";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
-import { PlacementSelect } from "../../../../components/select/placement-select";
-import { SearchableDialogSelect } from "../../../../components/select/searchable-dialog-select";
-import { SelectButtonTrigger } from "../../../../components/select/select-button-trigger";
+import { AppText } from "@/components/app-text";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
+import { PlacementSelect } from "@/components/select/placement-select";
+import { SearchableDialogSelect } from "@/components/select/searchable-dialog-select";
+import { SelectButtonTrigger } from "@/components/select/select-button-trigger";
 
 type SelectOption = {
   value: string;
@@ -448,3 +448,4 @@ if (Platform.OS === "ios") {
 export default function SelectScreen() {
   return <UsageVariantFlatList data={SELECT_VARIANTS} />;
 }
+

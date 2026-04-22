@@ -1,7 +1,7 @@
 import React from 'react';
 import Svg, { ClipPath, Defs, G, Path, Rect } from 'react-native-svg';
 import { withUniwind } from 'uniwind';
-import type { IconProps } from '../../helpers/types/icons';
+import type { IconProps } from '@/helpers/types/icons';
 
 /**
  * ThreeDiagonal icon component - React Native SVG implementation
@@ -51,3 +51,4 @@ export const ThreeDiagonalIcon = withUniwind(ThreeDiagonalIconComponent, {
     styleProperty: 'accentColor',
   },
 });
+

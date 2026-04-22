@@ -19,13 +19,13 @@ import { KeyboardController } from "react-native-keyboard-controller";
 import { Easing, FadeInDown, FadeOutDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { withUniwind } from "uniwind";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
-import { DialogBlurBackdrop } from "../../../../components/dialog-blur-backdrop";
-import { FloppyDiscIcon } from "../../../../components/icons/floppy-disc";
-import { TrashIcon } from "../../../../components/icons/trash";
-import { useAppTheme } from "../../../../contexts/app-theme-context";
-import { simulatePress } from "../../../../helpers/utils/simulate-press";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
+import { DialogBlurBackdrop } from "@/components/dialog-blur-backdrop";
+import { FloppyDiscIcon } from "@/components/icons/floppy-disc";
+import { TrashIcon } from "@/components/icons/trash";
+import { useAppTheme } from "@/contexts/app-theme-context";
+import { simulatePress } from "@/helpers/utils/simulate-press";
 
 const StyleScrollView = withUniwind(ScrollView);
 
@@ -491,3 +491,4 @@ export default function DialogScreen() {
     />
   );
 }
+

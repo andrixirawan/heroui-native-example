@@ -16,9 +16,9 @@ import Animated, {
   ZoomIn,
 } from "react-native-reanimated";
 import { withUniwind } from "uniwind";
-import { AppText } from "../../../../components/app-text";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
+import { AppText } from "@/components/app-text";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
 
 const StyledIonicons = withUniwind(Ionicons);
 const StyledFontAwesome6 = withUniwind(FontAwesome6);
@@ -316,3 +316,4 @@ const SWITCH_VARIANTS: UsageVariant[] = [
 export default function SwitchScreen() {
   return <UsageVariantFlatList data={SWITCH_VARIANTS} />;
 }
+

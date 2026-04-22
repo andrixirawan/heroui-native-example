@@ -9,7 +9,7 @@ import {
 } from 'react-native-keyboard-controller';
 import { Easing, FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAppTheme } from '../../contexts/app-theme-context';
+import { useAppTheme } from '@/contexts/app-theme-context';
 import { AppText } from '../app-text';
 import { SelectBlurBackdrop } from './select-blur-backdrop';
 
@@ -190,3 +190,4 @@ export function SearchableDialogSelect() {
     </Select>
   );
 }
+

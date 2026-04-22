@@ -1,8 +1,8 @@
 import { Separator, Surface } from "heroui-native";
 import { View } from "react-native";
-import { AppText } from "../../../../components/app-text";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
+import { AppText } from "@/components/app-text";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
 
 const SeparatorInActionContent = () => {
   return (
@@ -191,3 +191,4 @@ const SEPARATOR_VARIANTS: UsageVariant[] = [
 export default function SeparatorScreen() {
   return <UsageVariantFlatList data={SEPARATOR_VARIANTS} />;
 }
+

@@ -13,8 +13,8 @@ import { ScrollView } from 'react-native-gesture-handler';
 import Animated, { SlideInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { withUniwind } from 'uniwind';
-import { useAppTheme } from '../../../../contexts/app-theme-context';
-import { simulatePress } from '../../../../helpers/utils/simulate-press';
+import { useAppTheme } from '@/contexts/app-theme-context';
+import { simulatePress } from '@/helpers/utils/simulate-press';
 import { AppText } from '../../../app-text';
 import { SelectBlurBackdrop } from '../../../select/select-blur-backdrop';
 import { SelectContentContainer } from './select-content-container';
@@ -164,3 +164,4 @@ const styles = StyleSheet.create({
     pointerEvents: 'none',
   },
 });
+

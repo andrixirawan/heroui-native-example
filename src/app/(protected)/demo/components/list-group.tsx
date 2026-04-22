@@ -9,15 +9,15 @@ import {
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { View } from "react-native";
-import { AppText } from "../../../../components/app-text";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
-import { BellIcon } from "../../../../components/icons/bell";
-import { CreditCardIcon } from "../../../../components/icons/credit-card";
-import { GlobeIcon } from "../../../../components/icons/globe";
-import { MoonIcon } from "../../../../components/icons/moon";
-import { PaletteIcon } from "../../../../components/icons/palette";
-import { PersonIcon } from "../../../../components/icons/person";
+import { AppText } from "@/components/app-text";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
+import { BellIcon } from "@/components/icons/bell";
+import { CreditCardIcon } from "@/components/icons/credit-card";
+import { GlobeIcon } from "@/components/icons/globe";
+import { MoonIcon } from "@/components/icons/moon";
+import { PaletteIcon } from "@/components/icons/palette";
+import { PersonIcon } from "@/components/icons/person";
 
 const BasicContent = () => {
   const mutedColor = useThemeColor("muted");
@@ -244,3 +244,4 @@ const LIST_GROUP_VARIANTS: UsageVariant[] = [
 export default function ListGroupScreen() {
   return <UsageVariantFlatList data={LIST_GROUP_VARIANTS} />;
 }
+

@@ -5,7 +5,7 @@ import Animated, {
   useAnimatedStyle,
   type SharedValue,
 } from 'react-native-reanimated';
-import { useAppTheme } from '../../../contexts/app-theme-context';
+import { useAppTheme } from '@/contexts/app-theme-context';
 import { AppText } from '../../app-text';
 
 const AnimatedView = Animated.createAnimatedComponent(View);
@@ -85,3 +85,4 @@ export const PreviewCard: FC<PreviewCardProps> = ({
     </AnimatedView>
   );
 };
+

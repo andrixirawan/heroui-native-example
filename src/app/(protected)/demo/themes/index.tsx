@@ -6,13 +6,13 @@ import React from "react";
 import { Platform, Pressable, Text, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import Animated, { FadeIn } from "react-native-reanimated";
-import { CardContent } from "../../../../components/themes-content/card-content";
-import { CheckboxContent } from "../../../../components/themes-content/checkbox-content";
-import { RadioGroupContent } from "../../../../components/themes-content/radio-group-content";
-import { SwitchContent } from "../../../../components/themes-content/switch-content";
-import { TextInputContent } from "../../../../components/themes-content/text-input-content";
-import { useAppTheme } from "../../../../contexts/app-theme-context";
-import useHeaderHeight from "../../../../helpers/hooks/use-header-height";
+import { CardContent } from "@/components/themes-content/card-content";
+import { CheckboxContent } from "@/components/themes-content/checkbox-content";
+import { RadioGroupContent } from "@/components/themes-content/radio-group-content";
+import { SwitchContent } from "@/components/themes-content/switch-content";
+import { TextInputContent } from "@/components/themes-content/text-input-content";
+import { useAppTheme } from "@/contexts/app-theme-context";
+import useHeaderHeight from "@/helpers/hooks/use-header-height";
 
 type ThemeOption = {
   id: string;
@@ -163,3 +163,4 @@ export default function Themes() {
     </KeyboardAwareScrollView>
   );
 }
+

@@ -4,14 +4,14 @@ import { Button, colorKit, Popover, useThemeColor } from "heroui-native";
 import { useState } from "react";
 import { Platform, View } from "react-native";
 import { withUniwind } from "uniwind";
-import { AppText } from "../../../../components/app-text";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
-import { ArrowDownToSquareIcon } from "../../../../components/icons/arrow-down-to-square";
-import { CodeCompareIcon } from "../../../../components/icons/code-compare";
-import { CopyIcon } from "../../../../components/icons/copy";
-import { MapPinIcon } from "../../../../components/icons/map-pin";
-import { NodesRightIcon } from "../../../../components/icons/nodes-right";
+import { AppText } from "@/components/app-text";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
+import { ArrowDownToSquareIcon } from "@/components/icons/arrow-down-to-square";
+import { CodeCompareIcon } from "@/components/icons/code-compare";
+import { CopyIcon } from "@/components/icons/copy";
+import { MapPinIcon } from "@/components/icons/map-pin";
+import { NodesRightIcon } from "@/components/icons/nodes-right";
 
 const StyledIonicons = withUniwind(Ionicons);
 
@@ -366,3 +366,4 @@ if (Platform.OS === "ios") {
 export default function PopoverScreen() {
   return <UsageVariantFlatList data={POPOVER_VARIANTS} />;
 }
+

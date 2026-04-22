@@ -1,7 +1,7 @@
 import React from 'react';
 import Svg, { Path, Rect } from 'react-native-svg';
 import { withUniwind } from 'uniwind';
-import type { IconProps } from '../../helpers/types/icons';
+import type { IconProps } from '@/helpers/types/icons';
 
 /**
  * StarFill icon component - React Native SVG implementation
@@ -40,3 +40,4 @@ export const StarFillIcon = withUniwind(StarFillIconComponent, {
     styleProperty: 'accentColor',
   },
 });
+

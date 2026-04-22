@@ -20,9 +20,9 @@ import Animated, {
   type SharedValue,
 } from "react-native-reanimated";
 import { withUniwind } from "uniwind";
-import { AppText } from "../../../../components/app-text";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
+import { AppText } from "@/components/app-text";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 const StyleAnimatedView = withUniwind(Animated.View);
@@ -323,3 +323,4 @@ const CHECKBOX_VARIANTS: UsageVariant[] = [
 export default function CheckboxScreen() {
   return <UsageVariantFlatList data={CHECKBOX_VARIANTS} />;
 }
+

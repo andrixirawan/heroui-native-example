@@ -9,16 +9,16 @@ import {
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { FadeIn, LinearTransition } from "react-native-reanimated";
-import type { UsageVariant } from "../../../../components/component-presentation/types";
-import { UsageVariantFlatList } from "../../../../components/component-presentation/usage-variant-flatlist";
-import { ArrowDownToSquareIcon } from "../../../../components/icons/arrow-down-to-square";
-import { CircleInfoFillIcon } from "../../../../components/icons/circle-info-fill";
-import { HeartFillIcon } from "../../../../components/icons/heart-fill";
-import { PaperClipIcon } from "../../../../components/icons/paper-clip";
-import { PlusIcon } from "../../../../components/icons/plus";
-import { ShoppingCartIcon } from "../../../../components/icons/shopping-cart";
-import { TrashIcon } from "../../../../components/icons/trash";
-import { useAppTheme } from "../../../../contexts/app-theme-context";
+import type { UsageVariant } from "@/components/component-presentation/types";
+import { UsageVariantFlatList } from "@/components/component-presentation/usage-variant-flatlist";
+import { ArrowDownToSquareIcon } from "@/components/icons/arrow-down-to-square";
+import { CircleInfoFillIcon } from "@/components/icons/circle-info-fill";
+import { HeartFillIcon } from "@/components/icons/heart-fill";
+import { PaperClipIcon } from "@/components/icons/paper-clip";
+import { PlusIcon } from "@/components/icons/plus";
+import { ShoppingCartIcon } from "@/components/icons/shopping-cart";
+import { TrashIcon } from "@/components/icons/trash";
+import { useAppTheme } from "@/contexts/app-theme-context";
 
 const SizesContent = () => {
   return (
@@ -309,3 +309,4 @@ const BUTTON_VARIANTS: UsageVariant[] = [
 export default function ButtonScreen() {
   return <UsageVariantFlatList data={BUTTON_VARIANTS} />;
 }
+

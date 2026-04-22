@@ -3,7 +3,7 @@ import { type FC, type PropsWithChildren } from 'react';
 import { ScrollView, type ScrollViewProps } from 'react-native';
 import Animated, { type AnimatedProps } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import useHeaderHeight from '../helpers/hooks/use-header-height';
+import useHeaderHeight from '@/helpers/hooks/use-header-height';
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
@@ -35,3 +35,4 @@ export const ScreenScrollView: FC<PropsWithChildren<Props>> = ({
     </AnimatedScrollView>
   );
 };
+

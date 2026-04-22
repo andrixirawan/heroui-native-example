@@ -5,11 +5,11 @@ import { View } from "react-native";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { withUniwind } from "uniwind";
-import { AppText } from "../../../../components/app-text";
+import { AppText } from "@/components/app-text";
 import MarqueeCarousel, {
   type CardProps,
-} from "../../../../components/showcases/onboarding/marquee-carousel";
-import { useAppTheme } from "../../../../contexts/app-theme-context";
+} from "@/components/showcases/onboarding/marquee-carousel";
+import { useAppTheme } from "@/contexts/app-theme-context";
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 const StyledFeather = withUniwind(Feather);
@@ -134,3 +134,4 @@ const OnboardingScreen = () => {
 };
 
 export default OnboardingScreen;
+

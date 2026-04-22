@@ -6,13 +6,13 @@ import { KeyboardController } from "react-native-keyboard-controller";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { withUniwind } from "uniwind";
-import { AppText } from "../../../../components/app-text";
-import { Assignee } from "../../../../components/showcases/linear-task/dialogs/assignee";
-import { Labels } from "../../../../components/showcases/linear-task/dialogs/labels";
-import { Priority } from "../../../../components/showcases/linear-task/dialogs/priority";
-import { Project } from "../../../../components/showcases/linear-task/dialogs/project";
-import { Status } from "../../../../components/showcases/linear-task/dialogs/status";
-import { simulatePress } from "../../../../helpers/utils/simulate-press";
+import { AppText } from "@/components/app-text";
+import { Assignee } from "@/components/showcases/linear-task/dialogs/assignee";
+import { Labels } from "@/components/showcases/linear-task/dialogs/labels";
+import { Priority } from "@/components/showcases/linear-task/dialogs/priority";
+import { Project } from "@/components/showcases/linear-task/dialogs/project";
+import { Status } from "@/components/showcases/linear-task/dialogs/status";
+import { simulatePress } from "@/helpers/utils/simulate-press";
 
 const StyledMaterialCommunityIcons = withUniwind(MaterialCommunityIcons);
 const StyledAnimatedScrollView = withUniwind(Animated.ScrollView);
@@ -224,3 +224,4 @@ export default function LinearTaskScreen() {
     </StyledAnimatedScrollView>
   );
 }
+
