@@ -5,6 +5,7 @@ import {
   Inter_700Bold,
   useFonts,
 } from '@expo-google-fonts/inter';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import {
   Saira_400Regular,
   Saira_500Medium,
@@ -102,6 +103,8 @@ export default function Layout() {
     SNPro_500Medium,
     SNPro_600SemiBold,
     SNPro_700Bold,
+    ...Feather.font,
+    ...Ionicons.font,
   });
 
   return (

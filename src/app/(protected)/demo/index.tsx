@@ -46,7 +46,7 @@ const cards: HomeCardProps[] = [
     imageDark: HomeComponentsDark,
     count: COMPONENTS.length,
     footer: "Explore all components",
-    path: "components",
+    path: "/demo/components",
   },
   {
     title: "Themes",
@@ -54,7 +54,7 @@ const cards: HomeCardProps[] = [
     imageDark: HomeThemesDark,
     count: 4,
     footer: "Try different themes",
-    path: "themes",
+    path: "/demo/themes",
   },
   {
     title: "Showcases",
@@ -62,7 +62,7 @@ const cards: HomeCardProps[] = [
     imageDark: HomeShowcasesDark,
     count: 6,
     footer: "View components in action",
-    path: "showcases",
+    path: "/demo/showcases",
   },
 ];
 

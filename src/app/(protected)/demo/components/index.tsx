@@ -18,7 +18,7 @@ export default function App() {
   const { toast, isToastVisible } = useToast();
 
   useEffect(() => {
-    if (isToastVisible && pathname === "/components") {
+    if (isToastVisible && pathname === "/demo/components") {
       toast.hide("all");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

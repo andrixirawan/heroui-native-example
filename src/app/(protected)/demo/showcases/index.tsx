@@ -16,13 +16,13 @@ const data = [
     title: "Super App Paywall",
     description:
       "Modern subscription paywall, featuring animated bottom sheet, tab navigation, and flexible plan options.",
-    href: "/showcases/super-app-paywall",
+    href: "/demo/showcases/super-app-paywall",
     components: [
-      { name: "BottomSheet", href: "/components/bottom-sheet" },
-      { name: "Tabs", href: "/components/tabs" },
-      { name: "ControlField", href: "/components/control-field" },
-      { name: "Button", href: "/components/button" },
-      { name: "Chip", href: "/components/chip" },
+      { name: "BottomSheet", href: "/demo/components/bottom-sheet" },
+      { name: "Tabs", href: "/demo/components/tabs" },
+      { name: "ControlField", href: "/demo/components/control-field" },
+      { name: "Button", href: "/demo/components/button" },
+      { name: "Chip", href: "/demo/components/chip" },
     ],
   },
   {
@@ -33,11 +33,11 @@ const data = [
     title: "Raycast Model Select",
     description:
       "AI model selector with animated blur backdrop, progressive blurs, and smooth spring transitions inspired by Raycast.",
-    href: "/showcases/raycast",
+    href: "/demo/showcases/raycast",
     components: [
-      { name: "Select", href: "/components/select" },
-      { name: "Button", href: "/components/button" },
-      { name: "Avatar", href: "/components/avatar" },
+      { name: "Select", href: "/demo/components/select" },
+      { name: "Button", href: "/demo/components/button" },
+      { name: "Avatar", href: "/demo/components/avatar" },
     ],
   },
   {
@@ -48,12 +48,12 @@ const data = [
     title: "Cooking Onboarding",
     description:
       "Multi-step onboarding experience with automated popover sequences, state management, and interactive recipe features.",
-    href: "/showcases/cooking-onboarding",
+    href: "/demo/showcases/cooking-onboarding",
     components: [
-      { name: "Popover", href: "/components/popover" },
-      { name: "Avatar", href: "/components/avatar" },
-      { name: "Button", href: "/components/button" },
-      { name: "Separator", href: "/components/separator" },
+      { name: "Popover", href: "/demo/components/popover" },
+      { name: "Avatar", href: "/demo/components/avatar" },
+      { name: "Button", href: "/demo/components/button" },
+      { name: "Separator", href: "/demo/components/separator" },
     ],
   },
   {
@@ -64,16 +64,16 @@ const data = [
     title: "Linear Issue",
     description:
       "Interactive task management interface inspired by Linear, featuring dynamic dialogs and status updates.",
-    href: "/showcases/linear-task",
+    href: "/demo/showcases/linear-task",
     components: [
-      { name: "Dialog", href: "/components/dialog" },
-      { name: "Card", href: "/components/card" },
-      { name: "Chip", href: "/components/chip" },
-      { name: "RadioGroup", href: "/components/radio-group" },
-      { name: "ControlField", href: "/components/control-field" },
-      { name: "Checkbox", href: "/components/checkbox" },
-      { name: "Button", href: "/components/button" },
-      { name: "Avatar", href: "/components/avatar" },
+      { name: "Dialog", href: "/demo/components/dialog" },
+      { name: "Card", href: "/demo/components/card" },
+      { name: "Chip", href: "/demo/components/chip" },
+      { name: "RadioGroup", href: "/demo/components/radio-group" },
+      { name: "ControlField", href: "/demo/components/control-field" },
+      { name: "Checkbox", href: "/demo/components/checkbox" },
+      { name: "Button", href: "/demo/components/button" },
+      { name: "Avatar", href: "/demo/components/avatar" },
     ],
   },
   {
@@ -84,12 +84,12 @@ const data = [
     title: "Hero Paywall",
     description:
       "Modern, animated paywall with free trial, secure checkout, and flexible plans.",
-    href: "/showcases/paywall",
+    href: "/demo/showcases/paywall",
     components: [
-      { name: "Switch", href: "/components/switch" },
-      { name: "ControlField", href: "/components/control-field" },
-      { name: "RadioGroup", href: "/components/radio-group" },
-      { name: "Button", href: "/components/button" },
+      { name: "Switch", href: "/demo/components/switch" },
+      { name: "ControlField", href: "/demo/components/control-field" },
+      { name: "RadioGroup", href: "/demo/components/radio-group" },
+      { name: "Button", href: "/demo/components/button" },
     ],
   },
   {
@@ -99,11 +99,11 @@ const data = [
       "https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/images/heroui-native-example/showcases-onboarding-dark-1.png",
     title: "Onboarding",
     description: "Onboarding step with marquee carousel of shadowed cards.",
-    href: "/showcases/onboarding",
+    href: "/demo/showcases/onboarding",
     components: [
-      { name: "Button", href: "/components/button" },
-      { name: "Card", href: "/components/card" },
-      { name: "Separator", href: "/components/separator" },
+      { name: "Button", href: "/demo/components/button" },
+      { name: "Card", href: "/demo/components/card" },
+      { name: "Separator", href: "/demo/components/separator" },
     ],
   },
 ];

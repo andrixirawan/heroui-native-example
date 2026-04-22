@@ -1,10 +1,15 @@
 import Feather from "@expo/vector-icons/Feather";
 import { Redirect, Tabs, type Href } from "expo-router";
+import { useThemeColor } from "heroui-native";
 
 import { useAuth } from "@/modules/auth";
 
 export default function ProtectedLayout() {
   const { isAuthenticated, isHydrated } = useAuth();
+  const themeColorAccent = useThemeColor("accent");
+  const themeColorMuted = useThemeColor("muted");
+  const themeColorSurface = useThemeColor("surface");
+  const themeColorSeparator = useThemeColor("separator");
 
   if (!isHydrated) {
     return null;
@@ -18,7 +23,12 @@ export default function ProtectedLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#2563eb",
+        tabBarActiveTintColor: themeColorAccent,
+        tabBarInactiveTintColor: themeColorMuted,
+        tabBarStyle: {
+          backgroundColor: themeColorSurface,
+          borderTopColor: themeColorSeparator,
+        },
       }}
     >
       <Tabs.Screen
