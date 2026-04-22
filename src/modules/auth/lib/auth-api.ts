@@ -55,6 +55,18 @@ function getNativeOrigin() {
   return toUrlOrigin(getApiBaseUrl());
 }
 
+function isOriginErrorMessage(message: string | null | undefined) {
+  if (!message) {
+    return false;
+  }
+
+  const normalizedMessage = message.toLowerCase();
+  return (
+    normalizedMessage.includes("missing or null origin") ||
+    normalizedMessage.includes("origin not allowed")
+  );
+}
+
 function getAuthUrl(path: string) {
   const baseUrl = getApiBaseUrl();
 
@@ -128,11 +140,14 @@ async function fetchWithTimeout(
   }
 }
 
-function createBaseHeaders(extraHeaders?: HeadersInit) {
+function createBaseHeaders(
+  extraHeaders?: HeadersInit,
+  options?: { includeNativeOrigin?: boolean }
+) {
   const headers = new Headers(extraHeaders);
   headers.set("X-Client-Type", getClientType());
 
-  if (Platform.OS !== "web") {
+  if (Platform.OS !== "web" && options?.includeNativeOrigin !== false) {
     const nativeOrigin = getNativeOrigin();
     if (nativeOrigin) {
       headers.set("Origin", nativeOrigin);
@@ -156,11 +171,7 @@ export class AuthApiError extends Error {
 
 function toAuthApiError(error: unknown, fallbackMessage: string) {
   if (error instanceof AuthApiError) {
-    const normalizedMessage = error.message.toLowerCase();
-    if (
-      normalizedMessage.includes("missing or null origin") ||
-      normalizedMessage.includes("origin not allowed")
-    ) {
+    if (isOriginErrorMessage(error.message)) {
       return new AuthApiError(
         "Origin aplikasi belum diizinkan di backend. Tambahkan origin ke trusted origins server dan set EXPO_PUBLIC_AUTH_ORIGIN dengan URL http/https yang sama.",
         error.status,
@@ -178,65 +189,97 @@ function toAuthApiError(error: unknown, fallbackMessage: string) {
   return new AuthApiError(fallbackMessage, 0);
 }
 
+function shouldRetryWithoutOrigin(error: unknown) {
+  return (
+    Platform.OS !== "web" &&
+    Boolean(getNativeOrigin()) &&
+    error instanceof AuthApiError &&
+    isOriginErrorMessage(error.message)
+  );
+}
+
+async function runAuthRequestWithOriginFallback<T>(
+  request: (includeNativeOrigin: boolean) => Promise<T>
+) {
+  try {
+    return await request(true);
+  } catch (error) {
+    if (!shouldRetryWithoutOrigin(error)) {
+      throw error;
+    }
+
+    return request(false);
+  }
+}
+
 async function getSessionInternal(
   token: string | null,
   timeoutMs = REQUEST_TIMEOUT_MS
 ) {
-  const headers = createBaseHeaders();
+  return runAuthRequestWithOriginFallback(async (includeNativeOrigin) => {
+    const headers = createBaseHeaders(undefined, { includeNativeOrigin });
 
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
-  }
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
 
-  const response = await fetchWithTimeout(
-    getAuthUrl("/get-session"),
-    {
-      method: "GET",
-      headers,
-    },
-    timeoutMs
-  );
-
-  if (response.status === 401) {
-    return null;
-  }
-
-  if (!response.ok) {
-    const body = await readJsonSafely(response);
-    throw new AuthApiError(
-      body?.message ?? body?.error ?? "Failed to load session.",
-      response.status,
-      body?.code
+    const response = await fetchWithTimeout(
+      getAuthUrl("/get-session"),
+      {
+        method: "GET",
+        headers,
+      },
+      timeoutMs
     );
-  }
 
-  const body = await readJsonSafely(response);
-  return isSessionEnvelope(body) ? body : null;
+    if (response.status === 401) {
+      return null;
+    }
+
+    if (!response.ok) {
+      const body = await readJsonSafely(response);
+      throw new AuthApiError(
+        body?.message ?? body?.error ?? "Failed to load session.",
+        response.status,
+        body?.code
+      );
+    }
+
+    const body = await readJsonSafely(response);
+    return isSessionEnvelope(body) ? body : null;
+  });
 }
 
 async function handleAuthMutation(
   path: "/sign-in/email" | "/sign-up/email",
   body: EmailSignInInput | EmailSignUpInput
 ) {
-  const headers = createBaseHeaders({
-    "Content-Type": "application/json",
-  });
-
-  const response = await fetchWithTimeout(getAuthUrl(path), {
-    method: "POST",
-    headers,
-    body: JSON.stringify(body),
-  });
-
-  const payload = await readJsonSafely(response);
-
-  if (!response.ok) {
-    throw new AuthApiError(
-      payload?.message ?? payload?.error ?? "Authentication failed.",
-      response.status,
-      payload?.code
+  const response = await runAuthRequestWithOriginFallback(async (includeNativeOrigin) => {
+    const headers = createBaseHeaders(
+      {
+        "Content-Type": "application/json",
+      },
+      { includeNativeOrigin }
     );
-  }
+
+    const response = await fetchWithTimeout(getAuthUrl(path), {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+    });
+
+    const payload = await readJsonSafely(response);
+
+    if (!response.ok) {
+      throw new AuthApiError(
+        payload?.message ?? payload?.error ?? "Authentication failed.",
+        response.status,
+        payload?.code
+      );
+    }
+
+    return response;
+  });
 
   const token = response.headers.get("set-auth-token");
 
@@ -302,26 +345,31 @@ export const authApi = {
       return;
     }
 
-    const headers = createBaseHeaders({
-      "Content-Type": "application/json",
-    });
-    headers.set("Authorization", `Bearer ${token}`);
-
     try {
-      const response = await fetchWithTimeout(getAuthUrl("/sign-out"), {
-        method: "POST",
-        headers,
-        body: JSON.stringify({}),
-      });
-
-      if (!response.ok && response.status !== 401) {
-        const body = await readJsonSafely(response);
-        throw new AuthApiError(
-          body?.message ?? body?.error ?? "Failed to sign out.",
-          response.status,
-          body?.code
+      await runAuthRequestWithOriginFallback(async (includeNativeOrigin) => {
+        const headers = createBaseHeaders(
+          {
+            "Content-Type": "application/json",
+          },
+          { includeNativeOrigin }
         );
-      }
+        headers.set("Authorization", `Bearer ${token}`);
+
+        const response = await fetchWithTimeout(getAuthUrl("/sign-out"), {
+          method: "POST",
+          headers,
+          body: JSON.stringify({}),
+        });
+
+        if (!response.ok && response.status !== 401) {
+          const body = await readJsonSafely(response);
+          throw new AuthApiError(
+            body?.message ?? body?.error ?? "Failed to sign out.",
+            response.status,
+            body?.code
+          );
+        }
+      });
     } catch (error) {
       throw toAuthApiError(error, "Failed to sign out.");
     }
