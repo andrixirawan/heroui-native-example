@@ -1,15 +1,19 @@
-import Feather from "@expo/vector-icons/Feather";
+import { Feather } from "@expo/vector-icons";
 import { Redirect, Tabs, type Href } from "expo-router";
 import { useThemeColor } from "heroui-native";
 
+import { useAppTheme } from "@/contexts/app-theme-context";
 import { useAuth } from "@/modules/auth";
 
 export default function ProtectedLayout() {
   const { isAuthenticated, isHydrated } = useAuth();
+  const { isDark } = useAppTheme();
   const themeColorAccent = useThemeColor("accent");
   const themeColorMuted = useThemeColor("muted");
   const themeColorSurface = useThemeColor("surface");
   const themeColorSeparator = useThemeColor("separator");
+  const inactiveIconColor = isDark ? "#8B8EA1" : "#6B7280";
+  const activeIconColor = isDark ? "#FFFFFF" : "#111827";
 
   if (!isHydrated) {
     return null;
@@ -32,11 +36,15 @@ export default function ProtectedLayout() {
       }}
     >
       <Tabs.Screen
-        name="home"
+        name="home/index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color, size }) => (
-            <Feather name="home" size={size} color={color} />
+          tabBarIcon: ({ focused }) => (
+            <Feather
+              name="home"
+              size={20}
+              color={focused ? activeIconColor : inactiveIconColor}
+            />
           ),
         }}
       />
@@ -44,17 +52,25 @@ export default function ProtectedLayout() {
         name="demo"
         options={{
           title: "Demo",
-          tabBarIcon: ({ color, size }) => (
-            <Feather name="grid" size={size} color={color} />
+          tabBarIcon: ({ focused }) => (
+            <Feather
+              name="grid"
+              size={20}
+              color={focused ? activeIconColor : inactiveIconColor}
+            />
           ),
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name="settings/index"
         options={{
           title: "Settings",
-          tabBarIcon: ({ color, size }) => (
-            <Feather name="settings" size={size} color={color} />
+          tabBarIcon: ({ focused }) => (
+            <Feather
+              name="settings"
+              size={20}
+              color={focused ? activeIconColor : inactiveIconColor}
+            />
           ),
         }}
       />

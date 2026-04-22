@@ -24,6 +24,7 @@ import {
   SpaceGrotesk_600SemiBold,
   SpaceGrotesk_700Bold,
 } from '@expo-google-fonts/space-grotesk';
+import Constants from 'expo-constants';
 import { Slot } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { HeroUINativeProvider } from 'heroui-native';
@@ -38,10 +39,12 @@ import '../../global.css';
 import { AppThemeProvider } from '@/contexts/app-theme-context';
 import { AuthProvider, useAuth } from '@/modules/auth';
 
-SplashScreen.setOptions({
-  duration: 300,
-  fade: true,
-});
+if (Constants.appOwnership !== 'expo') {
+  SplashScreen.setOptions({
+    duration: 300,
+    fade: true,
+  });
+}
 
 void SplashScreen.preventAutoHideAsync();
 
