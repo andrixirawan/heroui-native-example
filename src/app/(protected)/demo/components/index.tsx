@@ -1,5 +1,5 @@
 import * as Haptics from "expo-haptics";
-import { usePathname, useRouter } from "expo-router";
+import { usePathname, useRouter, type Href } from "expo-router";
 import {
   ListGroup,
   PressableFeedback,
@@ -39,7 +39,7 @@ export default function App() {
                 if (Platform.OS === "ios") {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 }
-                router.push(`/components/${item.path}`);
+                router.push((`/demo/components/${item.path}`) as Href);
               }}
             >
               <PressableFeedback.Scale>

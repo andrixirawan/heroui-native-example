@@ -8,7 +8,10 @@
     "scheme": "heroui-native-example",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -37,6 +40,7 @@
           }
         }
       ],
+      "expo-secure-store",
       "expo-font",
       "expo-image",
       "expo-web-browser"

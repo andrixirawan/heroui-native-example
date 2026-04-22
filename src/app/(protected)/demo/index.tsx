@@ -1,9 +1,9 @@
 import Feather from "@expo/vector-icons/Feather";
-import { useRouter } from "expo-router";
+import { useRouter, type Href } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Card, Chip, cn } from "heroui-native";
-import type { FC } from "react";
-import { Image, Pressable, View, type ImageSourcePropType } from "react-native";
+import { Button, Card, Chip, cn } from "heroui-native";
+import { useState, type FC } from "react";
+import { Image, Pressable, RefreshControl, View, type ImageSourcePropType } from "react-native";
 import Animated, {
   Easing,
   FadeIn,
@@ -22,6 +22,7 @@ import { AppText } from "@/components/app-text";
 import { ScreenScrollView } from "@/components/screen-scroll-view";
 import { useAppTheme } from "@/contexts/app-theme-context";
 import { COMPONENTS } from "@/helpers/data/components";
+import { useAuth } from "@/modules/auth";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const AnimatedImage = Animated.createAnimatedComponent(Image);
@@ -95,7 +96,7 @@ const HomeCard: FC<HomeCardProps & { index: number }> = ({
       entering={FadeInDown.duration(300)
         .delay(index * 100)
         .easing(Easing.out(Easing.ease))}
-      onPress={() => router.push(path)}
+      onPress={() => router.push(path as Href)}
     >
       <Card
         className={cn(
@@ -157,12 +158,76 @@ const HomeCard: FC<HomeCardProps & { index: number }> = ({
 
 export default function App() {
   const { isDark } = useAppTheme();
+  const { lastSyncError, refreshSession, session, signOut } = useAuth();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  async function handleRefresh() {
+    setIsRefreshing(true);
+
+    try {
+      await refreshSession({ silent: true });
+    } finally {
+      setIsRefreshing(false);
+    }
+  }
+
+  const expiresLabel = session?.session.expiresAt
+    ? new Date(session.session.expiresAt).toLocaleString()
+    : "-";
 
   return (
-    <ScreenScrollView>
+    <ScreenScrollView
+      refreshControl={
+        <RefreshControl refreshing={isRefreshing} onRefresh={() => void handleRefresh()} />
+      }
+    >
       <AppText className="text-muted text-base text-center my-4">
         v1.0.2
       </AppText>
+      <Card className="mb-6 border border-divider bg-content1 shadow-none">
+        <Card.Body className="gap-4 p-5">
+          <View>
+            <Card.Title className="text-[24px]">Auth session</Card.Title>
+            <Card.Description className="mt-2">
+              Demo repo ini sekarang memakai Better Auth native flow dengan bearer token dan
+              `get-session` sebagai source of truth.
+            </Card.Description>
+          </View>
+
+          <View className="gap-3">
+            <View>
+              <AppText className="text-xs font-semibold uppercase tracking-[1.1px] text-muted">
+                User
+              </AppText>
+              <AppText className="mt-1 text-base text-foreground">
+                {session?.user.name ?? "-"} · {session?.user.email ?? "-"}
+              </AppText>
+            </View>
+
+            <View>
+              <AppText className="text-xs font-semibold uppercase tracking-[1.1px] text-muted">
+                Expires at
+              </AppText>
+              <AppText className="mt-1 text-base text-foreground">{expiresLabel}</AppText>
+            </View>
+
+            {lastSyncError ? (
+              <View className="rounded-2xl bg-danger/10 px-4 py-3">
+                <AppText className="text-sm leading-5 text-danger">{lastSyncError}</AppText>
+              </View>
+            ) : null}
+          </View>
+
+          <View className="gap-3">
+            <Button variant="secondary" onPress={() => void refreshSession()}>
+              <Button.Label>Refresh session</Button.Label>
+            </Button>
+            <Button variant="danger-soft" onPress={() => void signOut()}>
+              <Button.Label>Logout</Button.Label>
+            </Button>
+          </View>
+        </Card.Body>
+      </Card>
       <View className="gap-6">
         {cards.map((card, index) => (
           <HomeCard

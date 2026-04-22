@@ -1,15 +1,14 @@
 import { cn } from 'heroui-native';
 import { type FC, type PropsWithChildren } from 'react';
-import { Platform, View, type ScrollViewProps } from 'react-native';
+import { Platform, View, type ViewProps } from 'react-native';
 import Animated, { type AnimatedProps } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useHeaderHeight from '@/helpers/hooks/use-header-height';
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 
-interface Props extends AnimatedProps<ScrollViewProps> {
+interface Props extends AnimatedProps<ViewProps> {
   className?: string;
-  contentContainerClassName?: string;
 }
 
 export const SafeAreaView: FC<PropsWithChildren<Props>> = ({

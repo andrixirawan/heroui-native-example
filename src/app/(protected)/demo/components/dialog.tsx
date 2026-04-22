@@ -1,5 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { useRouter, type Href } from "expo-router";
 import {
   Button,
   cn,
@@ -423,7 +423,7 @@ const NativeModalDialogContent = () => {
       <View className="flex-1 items-center justify-center">
         <Button
           variant="secondary"
-          onPress={() => router.push("components/dialog-native-modal")}
+          onPress={() => router.push("/demo/components/dialog-native-modal" as Href)}
         >
           <Button.Label maxFontSizeMultiplier={1.6}>
             Dialog from native modal

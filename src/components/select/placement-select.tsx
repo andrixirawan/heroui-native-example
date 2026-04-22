@@ -94,9 +94,13 @@ const PlacementContentList: FC<PlacementContentListProps> = memo(
 
 const PlacementContent = () => {
   const { value } = useSelect();
+  const selectedValue = Array.isArray(value) ? value[0] : value;
 
   const valueIndex = useMemo(
-    () => US_STATES.findIndex((item) => item.value === (value?.value ?? 'CA')),
+    () =>
+      US_STATES.findIndex(
+        (item) => item.value === (selectedValue?.value ?? 'CA')
+      ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );

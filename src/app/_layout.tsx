@@ -26,7 +26,7 @@ import {
 import { Slot } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { HeroUINativeProvider } from 'heroui-native';
-import { useCallback } from 'react';
+import { type ReactNode, useCallback, useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
@@ -35,11 +35,14 @@ import {
 } from 'react-native-keyboard-controller';
 import '../../global.css';
 import { AppThemeProvider } from '@/contexts/app-theme-context';
+import { AuthProvider, useAuth } from '@/modules/auth';
 
 SplashScreen.setOptions({
   duration: 300,
   fade: true,
 });
+
+void SplashScreen.preventAutoHideAsync();
 
 /**
  * Component that wraps app content inside KeyboardProvider
@@ -47,7 +50,7 @@ SplashScreen.setOptions({
  */
 function AppContent() {
   const contentWrapper = useCallback(
-    (children: React.ReactNode) => (
+    (children: ReactNode) => (
       <KeyboardAvoidingView
         pointerEvents="box-none"
         behavior="padding"
@@ -82,7 +85,7 @@ function AppContent() {
 }
 
 export default function Layout() {
-  const fonts = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
     Inter_600SemiBold,
@@ -101,7 +104,35 @@ export default function Layout() {
     SNPro_700Bold,
   });
 
-  if (!fonts) {
+  return (
+    <AuthProvider>
+      <RootContent fontsLoaded={fontsLoaded} fontError={fontError} />
+    </AuthProvider>
+  );
+}
+
+function RootContent({
+  fontsLoaded,
+  fontError,
+}: {
+  fontsLoaded: boolean;
+  fontError: Error | null;
+}) {
+  const { isHydrated } = useAuth();
+
+  useEffect(() => {
+    if (fontError) {
+      throw fontError;
+    }
+  }, [fontError]);
+
+  useEffect(() => {
+    if (fontsLoaded && isHydrated) {
+      void SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, isHydrated]);
+
+  if (!fontsLoaded || !isHydrated) {
     return null;
   }
 

@@ -1,5 +1,5 @@
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
-import { useRouter } from "expo-router";
+import { useRouter, type Href } from "expo-router";
 import { BottomSheet, Button } from "heroui-native";
 import { useState } from "react";
 import { Platform, View } from "react-native";
@@ -169,7 +169,9 @@ const NativeModalBottomSheetContent = () => {
       <View className="flex-1 items-center justify-center">
         <Button
           variant="secondary"
-          onPress={() => router.push("components/bottom-sheet-native-modal")}
+          onPress={() =>
+            router.push("/demo/components/bottom-sheet-native-modal" as Href)
+          }
         >
           <Button.Label maxFontSizeMultiplier={1.2}>
             Bottom sheet from native modal

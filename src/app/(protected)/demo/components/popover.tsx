@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useRouter, type Href } from "expo-router";
 import { Button, colorKit, Popover, useThemeColor } from "heroui-native";
 import { useState } from "react";
 import { Platform, View } from "react-native";
@@ -320,7 +320,7 @@ const NativeModalTestContent = () => {
     <View className="flex-1 px-5 items-center justify-center">
       <Button
         variant="secondary"
-        onPress={() => router.push("components/popover-native-modal")}
+        onPress={() => router.push("/demo/components/popover-native-modal" as Href)}
       >
         <Button.Label maxFontSizeMultiplier={1.6}>
           Popover from native modal
