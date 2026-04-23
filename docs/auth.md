@@ -94,15 +94,15 @@ Catatan untuk mobile:
 - Mobile tidak perlu bergantung pada cookie.
 - Flow yang direkomendasikan adalah bearer token.
 - Dalam flow normal mobile, Anda tidak perlu menyiapkan origin URL/domain khusus hanya untuk auth.
-- Hanya jika mobile client atau layer tertentu benar-benar ikut mengirim header `Origin`, origin itu harus di-whitelist.
+- Backend memperlakukan request dengan `X-Client-Type: ios`, `android`, atau `native` sebagai native app request, jadi header `Origin` yang ikut terbawa dari tooling mobile/dev tidak menjadi syarat trusted origin.
 
 ## 4. Strategi Konsumsi per Client
 
-| Client              | Transport auth yang direkomendasikan | Yang disimpan di client                   | Catatan                                                   |
-| ------------------- | ------------------------------------ | ----------------------------------------- | --------------------------------------------------------- |
-| Web same-domain     | Cookie session                       | Tidak perlu simpan token manual           | Paling sederhana                                          |
-| Web beda domain     | Cookie session                       | Tidak perlu simpan token manual           | Wajib trusted origin, HTTPS, dan `credentials: "include"` |
-| Mobile / native app | Bearer session token                 | Simpan `set-auth-token` di secure storage | Tidak bergantung pada cookie browser                      |
+| Client | Transport auth yang direkomendasikan | Yang disimpan di client | Catatan |
+| --- | --- | --- | --- |
+| Web same-domain | Cookie session | Tidak perlu simpan token manual | Paling sederhana |
+| Web beda domain | Cookie session | Tidak perlu simpan token manual | Wajib trusted origin, HTTPS, dan `credentials: "include"` |
+| Mobile / native app | Bearer session token | Simpan `set-auth-token` di secure storage | Tidak bergantung pada cookie browser |
 
 ## 5. Header yang Perlu Dikirim
 
@@ -351,6 +351,7 @@ Yang diterima:
 Catatan:
 
 - Token yang sama juga bisa dipakai ke protected API lain di repo ini karena server menerima bearer token dan mengubahnya menjadi auth session context.
+- Selama request mengirim `X-Client-Type: ios|android|native`, backend tidak mewajibkan origin mobile masuk whitelist trusted origins.
 
 ## 9. Monitoring dan Revoke Session
 
@@ -528,10 +529,7 @@ Mobile juga tidak butuh origin URL/domain seperti web browser. Dari sisi integra
 - `EXPO_PUBLIC_API_URL`
   Base URL ke `jimun-server`, misalnya `https://api.example.com`.
 
-Jika app mobile Anda sengaja mengirim header `Origin`, maka origin itu harus ikut di-whitelist di env server:
-
-- `BETTER_AUTH_TRUSTED_ORIGINS`
-- atau `API_ALLOWED_ORIGINS`
+Header `Origin` tambahan yang kadang ikut terbawa dari tooling mobile/dev tidak perlu di-whitelist selama request tetap mengirim `X-Client-Type: ios|android|native`.
 
 Contoh:
 
@@ -541,12 +539,12 @@ EXPO_PUBLIC_API_URL=https://api.example.com
 
 ### 11.4 Ringkas per pihak
 
-| Pihak            | Env minimum                                                                                                                             |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Auth server      | `DATABASE_URL`, `BETTER_AUTH_URL` atau pasangan `BETTER_AUTH_URL_PRODUCTION` / `BETTER_AUTH_URL_DEVELOPMENT`, lalu `BETTER_AUTH_SECRET` |
-| Web consumer     | `NEXT_PUBLIC_API_URL`                                                                                                                   |
-| Mobile consumer  | `EXPO_PUBLIC_API_URL`                                                                                                                   |
-| Jika beda domain | tambahkan origin consumer ke `BETTER_AUTH_TRUSTED_ORIGINS` atau `API_ALLOWED_ORIGINS` di auth server                                    |
+| Pihak | Env minimum |
+| --- | --- |
+| Auth server | `DATABASE_URL`, `BETTER_AUTH_URL` atau pasangan `BETTER_AUTH_URL_PRODUCTION` / `BETTER_AUTH_URL_DEVELOPMENT`, lalu `BETTER_AUTH_SECRET` |
+| Web consumer | `NEXT_PUBLIC_API_URL` |
+| Mobile consumer | `EXPO_PUBLIC_API_URL` |
+| Jika beda domain | tambahkan origin consumer ke `BETTER_AUTH_TRUSTED_ORIGINS` atau `API_ALLOWED_ORIGINS` di auth server |
 
 ## 12. Ringkasan Praktis
 
