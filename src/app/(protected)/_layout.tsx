@@ -75,6 +75,16 @@ export default function ProtectedLayout() {
         }}
       />
       <Tabs.Screen
+        name="webview"
+        options={{
+          href: null,
+          title: "Internal Web",
+          tabBarStyle: {
+            display: "none",
+          },
+        }}
+      />
+      <Tabs.Screen
         name="index"
         options={{
           href: null,
