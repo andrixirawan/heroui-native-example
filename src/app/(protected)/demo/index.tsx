@@ -3,7 +3,13 @@ import { useRouter, type Href } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Button, Card, Chip, cn } from "heroui-native";
 import { useState, type FC } from "react";
-import { Image, Pressable, RefreshControl, View, type ImageSourcePropType } from "react-native";
+import {
+  Image,
+  Pressable,
+  RefreshControl,
+  View,
+  type ImageSourcePropType,
+} from "react-native";
 import Animated, {
   Easing,
   FadeIn,
@@ -178,7 +184,10 @@ export default function App() {
   return (
     <ScreenScrollView
       refreshControl={
-        <RefreshControl refreshing={isRefreshing} onRefresh={() => void handleRefresh()} />
+        <RefreshControl
+          refreshing={isRefreshing}
+          onRefresh={() => void handleRefresh()}
+        />
       }
     >
       <AppText className="text-muted text-base text-center my-4">
@@ -189,8 +198,9 @@ export default function App() {
           <View>
             <Card.Title className="text-[24px]">Auth session</Card.Title>
             <Card.Description className="mt-2">
-              Demo repo ini sekarang memakai Better Auth native flow dengan bearer token dan
-              `get-session` sebagai source of truth.
+              Demo repo ini sekarang memakai Better Auth Expo client resmi,
+              cookie session native yang disimpan aman, dan `get-session`
+              sebagai source of truth.
             </Card.Description>
           </View>
 
@@ -208,12 +218,16 @@ export default function App() {
               <AppText className="text-xs font-semibold uppercase tracking-[1.1px] text-muted">
                 Expires at
               </AppText>
-              <AppText className="mt-1 text-base text-foreground">{expiresLabel}</AppText>
+              <AppText className="mt-1 text-base text-foreground">
+                {expiresLabel}
+              </AppText>
             </View>
 
             {lastSyncError ? (
               <View className="rounded-2xl bg-danger/10 px-4 py-3">
-                <AppText className="text-sm leading-5 text-danger">{lastSyncError}</AppText>
+                <AppText className="text-sm leading-5 text-danger">
+                  {lastSyncError}
+                </AppText>
               </View>
             ) : null}
           </View>
@@ -246,4 +260,3 @@ export default function App() {
     </ScreenScrollView>
   );
 }
-

@@ -8,7 +8,7 @@ Fokus dokumen ini adalah kontrak yang benar-benar didukung implementasi repo saa
 
 - Sumber identitas utama adalah session yang disimpan di database tabel `session`.
 - Session browser memakai cookie `better-auth.session_token`.
-- Session mobile dan non-browser boleh memakai bearer token dari header response `set-auth-token`.
+- Session mobile Expo memakai Better Auth Expo client yang menyimpan cookie session secara aman di SecureStore.
 - Semua session dicatat dengan metadata `clientType` agar bisa dipantau per device/surface.
 - Admin dapat melihat session aktif dan melakukan revoke per session atau per user.
 
@@ -92,7 +92,7 @@ Catatan untuk mobile:
 
 - Mobile native tidak punya konsep origin browser seperti web app.
 - Mobile tidak perlu bergantung pada cookie.
-- Flow yang direkomendasikan adalah bearer token.
+- Flow yang direkomendasikan adalah Better Auth Expo cookie session.
 - Dalam flow normal mobile, Anda tidak perlu menyiapkan origin URL/domain khusus hanya untuk auth.
 - Backend memperlakukan request dengan `X-Client-Type: ios`, `android`, atau `native` sebagai native app request.
 - Jika runtime mobile tetap mengirim header `Origin` atau `Referer` dari scheme app/dev tooling, Better Auth akan menerima origin request tersebut secara dinamis selama request ditandai sebagai native app.
@@ -100,11 +100,11 @@ Catatan untuk mobile:
 
 ## 4. Strategi Konsumsi per Client
 
-| Client | Transport auth yang direkomendasikan | Yang disimpan di client | Catatan |
-| --- | --- | --- | --- |
-| Web same-domain | Cookie session | Tidak perlu simpan token manual | Paling sederhana |
-| Web beda domain | Cookie session | Tidak perlu simpan token manual | Wajib trusted origin, HTTPS, dan `credentials: "include"` |
-| Mobile / native app | Bearer session token | Simpan `set-auth-token` di secure storage | Tidak bergantung pada cookie browser |
+| Client              | Transport auth yang direkomendasikan | Yang disimpan di client                                          | Catatan                                                   |
+| ------------------- | ------------------------------------ | ---------------------------------------------------------------- | --------------------------------------------------------- |
+| Web same-domain     | Cookie session                       | Tidak perlu simpan token manual                                  | Paling sederhana                                          |
+| Web beda domain     | Cookie session                       | Tidak perlu simpan token manual                                  | Wajib trusted origin, HTTPS, dan `credentials: "include"` |
+| Mobile / native app | Better Auth Expo cookie session      | Better Auth Expo menyimpan cache session + cookie di SecureStore | Tidak bergantung pada cookie browser                      |
 
 ## 5. Header yang Perlu Dikirim
 
@@ -116,13 +116,12 @@ Header umum:
 Header auth:
 
 - Web: browser akan mengirim cookie session bila request memakai credentials
-- Mobile: kirim `Authorization: Bearer <session_token>`
+- Mobile: Better Auth Expo client akan mengirim header `Cookie` dari cookie session yang disimpan aman
 
-Header response yang penting:
+Header request tambahan untuk Expo native:
 
-- `set-auth-token: <session_token>`
-
-Header `set-auth-token` sudah di-expose oleh CORS, jadi bisa dibaca client JavaScript.
+- `expo-origin: <scheme://...>` dikirim oleh Better Auth Expo client
+- `X-Client-Type: ios | android | native` tetap direkomendasikan agar backend bisa mencatat surface session dengan jelas
 
 ## 6. Flow Auth yang Canonical
 
@@ -138,9 +137,9 @@ Header `set-auth-token` sudah di-expose oleh CORS, jadi bisa dibaca client JavaS
 
 1. Client memanggil `POST /api/auth/sign-in/email` atau `POST /api/auth/sign-up/email`.
 2. Client mengirim `X-Client-Type: ios`, `android`, atau `native`.
-3. Client membaca header `set-auth-token`.
-4. Token disimpan ke secure storage.
-5. Semua request berikutnya mengirim `Authorization: Bearer <session_token>`.
+3. Better Auth Expo client menyimpan cookie session ke SecureStore.
+4. Semua request auth berikutnya mengirim header `Cookie` secara otomatis lewat plugin Expo client.
+5. Better Auth Expo client juga mengirim `expo-origin` agar validasi origin server tetap lolos di flow native.
 6. Client memanggil `GET /api/auth/get-session` untuk bootstrap state user.
 
 ### 6.3 Setelah Login
@@ -178,7 +177,7 @@ Success response:
 - status `200`
 - session dibuat
 - web menerima cookie session
-- mobile dapat membaca header `set-auth-token`
+- mobile menerima `Set-Cookie` yang akan ditangani otomatis oleh Better Auth Expo client
 
 Error yang perlu diantisipasi:
 
@@ -208,7 +207,7 @@ Success response:
 - status `200`
 - session dibuat
 - web menerima cookie session
-- mobile dapat membaca header `set-auth-token`
+- mobile menerima `Set-Cookie` yang akan ditangani otomatis oleh Better Auth Expo client
 
 Error yang perlu diantisipasi:
 
@@ -222,7 +221,7 @@ Tujuan: mengambil source of truth session aktif.
 Request headers:
 
 - Web: cookie session otomatis terkirim bila request memakai credentials
-- Mobile: `Authorization: Bearer <session_token>`
+- Mobile: header `Cookie` dikirim otomatis oleh Better Auth Expo client
 
 Success response saat session aktif:
 
@@ -277,7 +276,7 @@ Tujuan: logout session yang sedang dipakai saat request.
 Request headers:
 
 - Web: cookie session
-- Mobile: `Authorization: Bearer <session_token>`
+- Mobile: header `Cookie` dikirim otomatis oleh Better Auth Expo client
 
 Success response:
 
@@ -337,23 +336,25 @@ Yang diterima:
 Yang dibutuhkan consumer:
 
 - base URL auth server
-- secure storage untuk menyimpan token
+- Better Auth Expo client di aplikasi Expo
+- `expo-secure-store` untuk cache session dan cookie
 - header `X-Client-Type: ios`, `android`, atau `native`
 
 Yang dikirim:
 
 - body JSON ke endpoint auth
-- `Authorization: Bearer <session_token>` untuk request setelah login
+- header `Cookie` dari Better Auth Expo client untuk request auth berikutnya
+- header `expo-origin` untuk membantu validasi origin native
 
 Yang diterima:
 
-- header `set-auth-token` saat login/register sukses
+- `Set-Cookie` saat login/register sukses
 - data user final dari `GET /api/auth/get-session`
 
 Catatan:
 
-- Token yang sama juga bisa dipakai ke protected API lain di repo ini karena server menerima bearer token dan mengubahnya menjadi auth session context.
-- Selama request mengirim `X-Client-Type: ios|android|native`, backend tidak mengharuskan origin mobile dimasukkan manual ke whitelist trusted origins untuk flow auth.
+- Untuk request server non-auth lain yang butuh session, Expo app dapat mengambil cookie header lewat `authClient.getCookie()`.
+- Selama request mengirim `expo-origin` dan/atau `X-Client-Type: ios|android|native`, backend tidak mengharuskan origin mobile dimasukkan manual ke whitelist trusted origins untuk flow auth.
 - Header CORS browser tetap hanya dikembalikan untuk origin web yang memang dikonfigurasi sebagai trusted origin.
 
 ## 9. Monitoring dan Revoke Session
@@ -456,11 +457,11 @@ Response sukses:
 
 ### Untuk mobile
 
-- baca header `set-auth-token` setelah login/register
-- simpan token ke secure storage
-- kirim `Authorization: Bearer <session_token>` pada request berikutnya
+- pakai `createAuthClient(..., expoClient(...))`, bukan fetch auth manual
+- biarkan Better Auth Expo client menyimpan cookie + cache session di SecureStore
 - kirim `X-Client-Type: ios`, `android`, atau `native`
-- bootstrap auth state dari `GET /api/auth/get-session`
+- bootstrap auth state dari `useSession` / `GET /api/auth/get-session`
+- untuk request server non-auth yang butuh session, pakai cookie dari `authClient.getCookie()`
 
 ### Untuk admin/ops
 
@@ -542,17 +543,17 @@ EXPO_PUBLIC_API_URL=https://api.example.com
 
 ### 11.4 Ringkas per pihak
 
-| Pihak | Env minimum |
-| --- | --- |
-| Auth server | `DATABASE_URL`, `BETTER_AUTH_URL` atau pasangan `BETTER_AUTH_URL_PRODUCTION` / `BETTER_AUTH_URL_DEVELOPMENT`, lalu `BETTER_AUTH_SECRET` |
-| Web consumer | `NEXT_PUBLIC_API_URL` |
-| Mobile consumer | `EXPO_PUBLIC_API_URL` |
-| Jika beda domain | tambahkan origin consumer ke `BETTER_AUTH_TRUSTED_ORIGINS` atau `API_ALLOWED_ORIGINS` di auth server |
+| Pihak            | Env minimum                                                                                                                             |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth server      | `DATABASE_URL`, `BETTER_AUTH_URL` atau pasangan `BETTER_AUTH_URL_PRODUCTION` / `BETTER_AUTH_URL_DEVELOPMENT`, lalu `BETTER_AUTH_SECRET` |
+| Web consumer     | `NEXT_PUBLIC_API_URL`                                                                                                                   |
+| Mobile consumer  | `EXPO_PUBLIC_API_URL`                                                                                                                   |
+| Jika beda domain | tambahkan origin consumer ke `BETTER_AUTH_TRUSTED_ORIGINS` atau `API_ALLOWED_ORIGINS` di auth server                                    |
 
 ## 12. Ringkasan Praktis
 
 - Auth project ini tetap **session-based**.
 - Web memakai **cookie session**.
-- Mobile memakai **bearer token yang merepresentasikan session yang sama**.
+- Mobile memakai **Better Auth Expo cookie session** yang tetap merepresentasikan session server yang sama.
 - `GET /api/auth/get-session` adalah source of truth untuk membaca state login.
 - Monitoring dan revoke session sudah tersedia lewat endpoint admin.

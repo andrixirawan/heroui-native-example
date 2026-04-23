@@ -44,9 +44,4 @@ export type EmailSignUpInput = {
   password: string;
 };
 
-export type AuthMutationResult = {
-  token: string | null;
-  session: SessionEnvelope;
-};
-
 export type AuthStatus = "loading" | "authenticated" | "anonymous";

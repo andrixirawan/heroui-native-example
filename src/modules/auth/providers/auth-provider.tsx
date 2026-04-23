@@ -1,8 +1,11 @@
-import { createContext, useEffect, useRef, useState, type ReactNode } from "react";
-import { AppState, Platform } from "react-native";
+import { createContext, useEffect, useState, type ReactNode } from "react";
 
-import { authApi, AuthApiError, getApiBaseUrl } from "@/modules/auth/lib/auth-api";
-import { authStorage } from "@/modules/auth/lib/auth-storage";
+import {
+  authClient,
+  getApiBaseUrl,
+  getSessionStoreSnapshot,
+} from "@/modules/auth/lib/auth-client";
+import { AuthApiError, toAuthApiError } from "@/modules/auth/lib/auth-errors";
 import type {
   AuthStatus,
   EmailSignInInput,
@@ -10,7 +13,7 @@ import type {
   SessionEnvelope,
 } from "@/modules/auth/types/auth-types";
 
-const CAN_RESTORE_SESSION_WITHOUT_STORED_TOKEN = Platform.OS === "web";
+type PendingAction = "sign-in" | "sign-up" | "sign-out" | "refresh" | null;
 
 type AuthContextValue = {
   apiBaseUrl: string | null;
@@ -21,7 +24,9 @@ type AuthContextValue = {
   isHydrated: boolean;
   lastSyncAt: number | null;
   lastSyncError: string | null;
-  refreshSession: (options?: { silent?: boolean }) => Promise<SessionEnvelope | null>;
+  refreshSession: (options?: {
+    silent?: boolean;
+  }) => Promise<SessionEnvelope | null>;
   session: SessionEnvelope | null;
   signIn: (input: EmailSignInInput) => Promise<void>;
   signOut: () => Promise<void>;
@@ -29,395 +34,283 @@ type AuthContextValue = {
   status: AuthStatus;
 };
 
-type AuthState = {
-  configError: string | null;
-  errorMessage: string | null;
-  isHydrated: boolean;
-  lastSyncAt: number | null;
-  lastSyncError: string | null;
-  pendingAction: "bootstrap" | "sign-in" | "sign-up" | "sign-out" | "refresh" | null;
-  session: SessionEnvelope | null;
-  status: AuthStatus;
-};
-
-const initialState: AuthState = {
-  configError: null,
-  errorMessage: null,
-  isHydrated: false,
-  lastSyncAt: null,
-  lastSyncError: null,
-  pendingAction: "bootstrap",
-  session: null,
-  status: "loading",
-};
+const missingApiUrlMessage =
+  "Set EXPO_PUBLIC_API_URL first so the app knows where your Better Auth backend lives.";
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
-function getErrorMessage(error: unknown) {
-  if (error instanceof AuthApiError) {
-    return error.message;
-  }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return "Something went wrong.";
-}
-
-function applyAuthenticatedState(session: SessionEnvelope) {
+function createConfigError(apiBaseUrl: string | null): AuthContextValue {
   return {
-    status: "authenticated" as const,
-    session,
+    apiBaseUrl,
+    configError: missingApiUrlMessage,
     errorMessage: null,
-    lastSyncAt: Date.now(),
-    lastSyncError: null,
-  };
-}
-
-function applyAnonymousState() {
-  return {
-    status: "anonymous" as const,
-    session: null,
-    errorMessage: null,
+    isAuthenticated: false,
+    isBusy: false,
+    isHydrated: true,
     lastSyncAt: null,
+    lastSyncError: null,
+    async refreshSession() {
+      return null;
+    },
+    session: null,
+    async signIn() {
+      throw new AuthApiError(missingApiUrlMessage, 0, "AUTH_CONFIG_ERROR");
+    },
+    async signOut() {},
+    async signUp() {
+      throw new AuthApiError(missingApiUrlMessage, 0, "AUTH_CONFIG_ERROR");
+    },
+    status: "anonymous",
   };
+}
+
+function getSessionSnapshot() {
+  const snapshot = getSessionStoreSnapshot();
+  return snapshot.data ?? null;
+}
+
+function getStatus(
+  isHydrated: boolean,
+  session: SessionEnvelope | null,
+): AuthStatus {
+  if (!isHydrated) {
+    return "loading";
+  }
+
+  return session ? "authenticated" : "anonymous";
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>(initialState);
   const apiBaseUrl = getApiBaseUrl();
-  const syncPromiseRef = useRef<Promise<SessionEnvelope | null> | null>(null);
-  const stateRef = useRef(state);
-  const refreshSessionRef = useRef<
-    (options?: { silent?: boolean }) => Promise<SessionEnvelope | null>
-  >(async () => null);
 
-  useEffect(() => {
-    stateRef.current = state;
-  }, [state]);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function bootstrap() {
-      if (!apiBaseUrl) {
-        if (!isMounted) {
-          return;
-        }
-
-        setState({
-          ...initialState,
-          configError:
-            "Set EXPO_PUBLIC_API_URL first so the app knows where your Better Auth backend lives.",
-          isHydrated: true,
-          pendingAction: null,
-          status: "anonymous",
-        });
-        return;
-      }
-
-      const [token, cachedSession] = await Promise.all([
-        authStorage.getToken(),
-        authStorage.getSessionSnapshot(),
-      ]);
-
-      if (!isMounted) {
-        return;
-      }
-
-      if (!token && !CAN_RESTORE_SESSION_WITHOUT_STORED_TOKEN) {
-        await authStorage.clearSessionSnapshot();
-
-        if (!isMounted) {
-          return;
-        }
-
-        setState((current) => ({
-          ...current,
-          ...applyAnonymousState(),
-          configError: null,
-          isHydrated: true,
-          pendingAction: null,
-          lastSyncError: null,
-        }));
-        return;
-      }
-
-      if (cachedSession) {
-        setState((current) => ({
-          ...current,
-          ...applyAuthenticatedState(cachedSession),
-          isHydrated: false,
-          pendingAction: "bootstrap",
-        }));
-      }
-
-      try {
-        const session = await authApi.getSession(token);
-
-        if (!isMounted) {
-          return;
-        }
-
-        if (!session) {
-          await authStorage.clearAll();
-
-          if (!isMounted) {
-            return;
-          }
-
-          setState((current) => ({
-            ...current,
-            ...applyAnonymousState(),
-            configError: null,
-            isHydrated: true,
-            pendingAction: null,
-          }));
-          return;
-        }
-
-        await authStorage.setSessionSnapshot(session);
-
-        if (!isMounted) {
-          return;
-        }
-
-        setState((current) => ({
-          ...current,
-          ...applyAuthenticatedState(session),
-          configError: null,
-          isHydrated: true,
-          pendingAction: null,
-        }));
-      } catch (error) {
-        if (!isMounted) {
-          return;
-        }
-
-        if (cachedSession) {
-          setState((current) => ({
-            ...current,
-            ...applyAuthenticatedState(cachedSession),
-            configError: null,
-            errorMessage: null,
-            isHydrated: true,
-            lastSyncError: getErrorMessage(error),
-            pendingAction: null,
-          }));
-          return;
-        }
-
-        await authStorage.clearAll();
-
-        if (!isMounted) {
-          return;
-        }
-
-        setState((current) => ({
-          ...current,
-          ...applyAnonymousState(),
-          configError: null,
-          errorMessage: null,
-          isHydrated: true,
-          lastSyncError: getErrorMessage(error),
-          pendingAction: null,
-        }));
-      }
-    }
-
-    void bootstrap();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [apiBaseUrl]);
-
-  async function refreshSession(options?: { silent?: boolean }) {
-    if (syncPromiseRef.current) {
-      return syncPromiseRef.current;
-    }
-
-    const promise = (async () => {
-      const token = await authStorage.getToken();
-
-      if (!token && !CAN_RESTORE_SESSION_WITHOUT_STORED_TOKEN) {
-        await authStorage.clearSessionSnapshot();
-        setState((current) => ({
-          ...current,
-          ...applyAnonymousState(),
-          pendingAction: null,
-        }));
-        return null;
-      }
-
-      if (!options?.silent) {
-        setState((current) => ({
-          ...current,
-          errorMessage: null,
-          pendingAction: "refresh",
-        }));
-      }
-
-      try {
-        const session = await authApi.getSession(token);
-
-        if (!session) {
-          await authStorage.clearAll();
-          setState((current) => ({
-            ...current,
-            ...applyAnonymousState(),
-            lastSyncError: null,
-            pendingAction: null,
-          }));
-          return null;
-        }
-
-        await authStorage.setSessionSnapshot(session);
-        setState((current) => ({
-          ...current,
-          ...applyAuthenticatedState(session),
-          pendingAction: null,
-        }));
-        return session;
-      } catch (error) {
-        setState((current) => ({
-          ...current,
-          errorMessage: options?.silent ? current.errorMessage : getErrorMessage(error),
-          lastSyncError: getErrorMessage(error),
-          pendingAction: null,
-        }));
-        return stateRef.current.session;
-      }
-    })();
-
-    syncPromiseRef.current = promise;
-
-    try {
-      return await promise;
-    } finally {
-      syncPromiseRef.current = null;
-    }
+  if (!apiBaseUrl) {
+    return (
+      <AuthContext.Provider value={createConfigError(apiBaseUrl)}>
+        {children}
+      </AuthContext.Provider>
+    );
   }
 
-  useEffect(() => {
-    refreshSessionRef.current = refreshSession;
-  });
+  return (
+    <ConfiguredAuthProvider apiBaseUrl={apiBaseUrl}>
+      {children}
+    </ConfiguredAuthProvider>
+  );
+}
+
+function ConfiguredAuthProvider({
+  apiBaseUrl,
+  children,
+}: {
+  apiBaseUrl: string;
+  children: ReactNode;
+}) {
+  const sessionState = authClient.useSession();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [lastSyncAt, setLastSyncAt] = useState<number | null>(null);
+  const [lastSyncError, setLastSyncError] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
+
+  const session = (sessionState.data ?? null) as SessionEnvelope | null;
+  const hasSession = Boolean(session);
+  const isHydrated = Boolean(session) || !sessionState.isPending;
+  const status = getStatus(isHydrated, session);
 
   useEffect(() => {
-    const subscription = AppState.addEventListener("change", (nextState) => {
-      if (nextState === "active" && stateRef.current.isHydrated && stateRef.current.session) {
-        void refreshSessionRef.current({ silent: true });
+    if (!isHydrated) {
+      return;
+    }
+
+    if (sessionState.error) {
+      setLastSyncError(
+        toAuthApiError(sessionState.error, "Failed to refresh session.")
+          .message,
+      );
+      return;
+    }
+
+    if (hasSession) {
+      setLastSyncAt(Date.now());
+      setLastSyncError(null);
+      return;
+    }
+
+    if (pendingAction !== "sign-in" && pendingAction !== "sign-up") {
+      setLastSyncAt(null);
+      setLastSyncError(null);
+    }
+  }, [
+    isHydrated,
+    hasSession,
+    pendingAction,
+    session?.session.expiresAt,
+    session?.session.id,
+    sessionState.error,
+  ]);
+
+  async function syncSession(fallbackMessage: string) {
+    await sessionState.refetch();
+
+    const snapshot = getSessionStoreSnapshot();
+
+    if (snapshot.error) {
+      throw toAuthApiError(snapshot.error, fallbackMessage);
+    }
+
+    return snapshot.data ?? null;
+  }
+
+  async function refreshSession(options?: { silent?: boolean }) {
+    if (!options?.silent) {
+      setErrorMessage(null);
+      setPendingAction("refresh");
+    }
+
+    try {
+      const nextSession = await syncSession("Failed to refresh session.");
+
+      setLastSyncAt(nextSession ? Date.now() : null);
+      setLastSyncError(null);
+
+      return nextSession;
+    } catch (error) {
+      const authError = toAuthApiError(error, "Failed to refresh session.");
+
+      setLastSyncError(authError.message);
+
+      if (!options?.silent) {
+        setErrorMessage(authError.message);
       }
-    });
 
-    return () => {
-      subscription.remove();
-    };
-  }, []);
-
-  async function persistAuthenticatedSession(session: SessionEnvelope, token: string | null) {
-    await Promise.all([
-      token ? authStorage.setToken(token) : authStorage.clearToken(),
-      authStorage.setSessionSnapshot(session),
-    ]);
+      return getSessionSnapshot();
+    } finally {
+      if (!options?.silent) {
+        setPendingAction(null);
+      }
+    }
   }
 
   async function signIn(input: EmailSignInInput) {
-    setState((current) => ({
-      ...current,
-      errorMessage: null,
-      pendingAction: "sign-in",
-    }));
+    setErrorMessage(null);
+    setPendingAction("sign-in");
 
     try {
-      const result = await authApi.signInEmail(input);
-      await persistAuthenticatedSession(result.session, result.token);
-      setState((current) => ({
-        ...current,
-        ...applyAuthenticatedState(result.session),
-        configError: null,
-        isHydrated: true,
-        pendingAction: null,
-      }));
+      const result = await authClient.signIn.email({
+        email: input.email.trim(),
+        password: input.password,
+      });
+
+      if (result.error) {
+        throw toAuthApiError(result.error, "Failed to sign in.");
+      }
+
+      const nextSession = await syncSession(
+        "Login succeeded but session could not be loaded from /get-session.",
+      );
+
+      if (!nextSession) {
+        throw new AuthApiError(
+          "Login succeeded but session could not be loaded from /get-session.",
+          0,
+          "MISSING_SESSION",
+        );
+      }
+
+      setLastSyncAt(Date.now());
+      setLastSyncError(null);
     } catch (error) {
-      setState((current) => ({
-        ...current,
-        errorMessage: getErrorMessage(error),
-        pendingAction: null,
-      }));
-      throw error;
+      const authError = toAuthApiError(error, "Failed to sign in.");
+
+      setErrorMessage(authError.message);
+      throw authError;
+    } finally {
+      setPendingAction(null);
     }
   }
 
   async function signUp(input: EmailSignUpInput) {
-    setState((current) => ({
-      ...current,
-      errorMessage: null,
-      pendingAction: "sign-up",
-    }));
+    setErrorMessage(null);
+    setPendingAction("sign-up");
 
     try {
-      const result = await authApi.signUpEmail(input);
-      await persistAuthenticatedSession(result.session, result.token);
-      setState((current) => ({
-        ...current,
-        ...applyAuthenticatedState(result.session),
-        configError: null,
-        isHydrated: true,
-        pendingAction: null,
-      }));
+      const result = await authClient.signUp.email({
+        name: input.name.trim(),
+        email: input.email.trim(),
+        password: input.password,
+      });
+
+      if (result.error) {
+        throw toAuthApiError(result.error, "Failed to create account.");
+      }
+
+      const nextSession = await syncSession(
+        "Register succeeded but session could not be loaded from /get-session.",
+      );
+
+      if (!nextSession) {
+        throw new AuthApiError(
+          "Register succeeded but session could not be loaded from /get-session.",
+          0,
+          "MISSING_SESSION",
+        );
+      }
+
+      setLastSyncAt(Date.now());
+      setLastSyncError(null);
     } catch (error) {
-      setState((current) => ({
-        ...current,
-        errorMessage: getErrorMessage(error),
-        pendingAction: null,
-      }));
-      throw error;
+      const authError = toAuthApiError(error, "Failed to create account.");
+
+      setErrorMessage(authError.message);
+      throw authError;
+    } finally {
+      setPendingAction(null);
     }
   }
 
   async function signOut() {
-    setState((current) => ({
-      ...current,
-      errorMessage: null,
-      pendingAction: "sign-out",
-    }));
-
-    const token = await authStorage.getToken();
+    setErrorMessage(null);
+    setPendingAction("sign-out");
 
     try {
-      await authApi.signOut(token);
+      const result = await authClient.signOut();
+
+      if (result.error) {
+        throw toAuthApiError(result.error, "Failed to sign out.");
+      }
     } catch {
       // Local logout must still succeed even if the server-side sign-out call fails.
     } finally {
-      await authStorage.clearAll();
-      syncPromiseRef.current = null;
-      setState((current) => ({
-        ...current,
-        ...applyAnonymousState(),
-        errorMessage: null,
-        lastSyncError: null,
-        pendingAction: null,
-      }));
+      try {
+        await sessionState.refetch();
+      } catch {
+        // Native Expo client already clears the local cookie cache before the request runs.
+      }
+
+      setLastSyncAt(null);
+      setLastSyncError(null);
+      setErrorMessage(null);
+      setPendingAction(null);
     }
   }
 
   const value: AuthContextValue = {
     apiBaseUrl,
-    configError: state.configError,
-    errorMessage: state.errorMessage,
-    isAuthenticated: state.status === "authenticated" && Boolean(state.session),
-    isBusy: state.pendingAction !== null,
-    isHydrated: state.isHydrated,
-    lastSyncAt: state.lastSyncAt,
-    lastSyncError: state.lastSyncError,
+    configError: null,
+    errorMessage,
+    isAuthenticated: status === "authenticated" && hasSession,
+    isBusy:
+      pendingAction !== null ||
+      sessionState.isPending ||
+      sessionState.isRefetching,
+    isHydrated,
+    lastSyncAt,
+    lastSyncError,
     refreshSession,
-    session: state.session,
+    session,
     signIn,
     signOut,
     signUp,
-    status: state.status,
+    status,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

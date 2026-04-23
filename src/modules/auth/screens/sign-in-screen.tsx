@@ -25,7 +25,7 @@ import { EyeIcon } from "@/components/icons/eye";
 import { EyeSlashIcon } from "@/components/icons/eye-slash";
 import { LockIcon } from "@/components/icons/lock";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
-import { AuthApiError } from "@/modules/auth/lib/auth-api";
+import { AuthApiError } from "@/modules/auth/lib/auth-errors";
 
 export function SignInScreen() {
   const { configError, errorMessage, refreshSession, signIn } = useAuth();
