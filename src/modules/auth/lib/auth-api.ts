@@ -47,8 +47,25 @@ function isOriginErrorMessage(message: string | null | undefined) {
   );
 }
 
+function getCurrentWebOrigin() {
+  if (typeof window === "undefined" || !window.location?.origin) {
+    return null;
+  }
+
+  return window.location.origin;
+}
+
 function getOriginErrorMessage() {
-  return "Backend masih menolak request auth karena validasi Origin. Berdasarkan docs/auth.md terbaru, flow mobile normal hanya butuh EXPO_PUBLIC_API_URL, jadi konfigurasi backend belum selaras dengan dokumen terbaru.";
+  if (isWebAuthClient()) {
+    const currentOrigin = getCurrentWebOrigin();
+    const originLabel = currentOrigin
+      ? `origin ${currentOrigin}`
+      : "origin frontend ini";
+
+    return `Backend menolak login dari ${originLabel}. Berdasarkan docs/auth.md, flow web lintas domain wajib menambahkan origin frontend ke BETTER_AUTH_TRUSTED_ORIGINS atau API_ALLOWED_ORIGINS di backend.`;
+  }
+
+  return "Backend masih menolak request auth native karena validasi Origin. Berdasarkan docs/auth.md, flow mobile normal cukup memakai EXPO_PUBLIC_API_URL dan mengirim X-Client-Type: ios|android|native, jadi konfigurasi backend native belum selaras dengan dokumen terbaru.";
 }
 
 function getAuthUrl(path: string) {

@@ -94,7 +94,9 @@ Catatan untuk mobile:
 - Mobile tidak perlu bergantung pada cookie.
 - Flow yang direkomendasikan adalah bearer token.
 - Dalam flow normal mobile, Anda tidak perlu menyiapkan origin URL/domain khusus hanya untuk auth.
-- Backend memperlakukan request dengan `X-Client-Type: ios`, `android`, atau `native` sebagai native app request, jadi header `Origin` yang ikut terbawa dari tooling mobile/dev tidak menjadi syarat trusted origin.
+- Backend memperlakukan request dengan `X-Client-Type: ios`, `android`, atau `native` sebagai native app request.
+- Jika runtime mobile tetap mengirim header `Origin` atau `Referer` dari scheme app/dev tooling, Better Auth akan menerima origin request tersebut secara dinamis selama request ditandai sebagai native app.
+- Allowance dinamis ini hanya untuk validasi auth internal, bukan untuk membuka CORS browser arbitrer.
 
 ## 4. Strategi Konsumsi per Client
 
@@ -351,7 +353,8 @@ Yang diterima:
 Catatan:
 
 - Token yang sama juga bisa dipakai ke protected API lain di repo ini karena server menerima bearer token dan mengubahnya menjadi auth session context.
-- Selama request mengirim `X-Client-Type: ios|android|native`, backend tidak mewajibkan origin mobile masuk whitelist trusted origins.
+- Selama request mengirim `X-Client-Type: ios|android|native`, backend tidak mengharuskan origin mobile dimasukkan manual ke whitelist trusted origins untuk flow auth.
+- Header CORS browser tetap hanya dikembalikan untuk origin web yang memang dikonfigurasi sebagai trusted origin.
 
 ## 9. Monitoring dan Revoke Session
 
@@ -529,7 +532,7 @@ Mobile juga tidak butuh origin URL/domain seperti web browser. Dari sisi integra
 - `EXPO_PUBLIC_API_URL`
   Base URL ke `jimun-server`, misalnya `https://api.example.com`.
 
-Header `Origin` tambahan yang kadang ikut terbawa dari tooling mobile/dev tidak perlu di-whitelist selama request tetap mengirim `X-Client-Type: ios|android|native`.
+Header `Origin` atau `Referer` tambahan yang kadang ikut terbawa dari tooling mobile/dev tidak perlu di-whitelist manual selama request tetap mengirim `X-Client-Type: ios|android|native`.
 
 Contoh:
 
