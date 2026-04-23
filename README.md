@@ -23,6 +23,21 @@ This is a React Native (Expo 54) project with [HeroUI Native](https://github.com
    npx expo start
    ```
 
+## Auth Setup
+
+This app follows the backend contract documented in [`docs/auth.md`](docs/auth.md).
+
+- Set `EXPO_PUBLIC_API_URL` to your Better Auth server base URL, for example `https://api.example.com`
+- On native (`ios` / `android`), the app reads `set-auth-token`, stores it in secure storage, then bootstraps user state from `GET /api/auth/get-session`
+- On web, the app uses cookie sessions with `credentials: "include"` and does not depend on a manually stored token
+- `EXPO_PUBLIC_AUTH_INCLUDE_ORIGIN` and `EXPO_PUBLIC_AUTH_ORIGIN` are not needed in the normal flow from `docs/auth.md`; only use them if the backend explicitly requires a whitelisted `Origin` header from the native app
+
+Example `.env`:
+
+```env
+EXPO_PUBLIC_API_URL=https://api.example.com
+```
+
 4. (Optional) Clean git history for a fresh start
 
    ```bash

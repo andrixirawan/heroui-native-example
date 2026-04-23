@@ -12,7 +12,15 @@ const REQUEST_TIMEOUT_MS = 8000;
 const SHOULD_INCLUDE_NATIVE_ORIGIN =
   process.env.EXPO_PUBLIC_AUTH_INCLUDE_ORIGIN?.trim().toLowerCase() === "true";
 
+function isWebAuthClient() {
+  return Platform.OS === "web";
+}
+
 function getClientType() {
+  if (Platform.OS === "web") {
+    return "web";
+  }
+
   if (Platform.OS === "ios") {
     return "ios";
   }
@@ -119,10 +127,16 @@ async function fetchWithTimeout(
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    return await fetch(input, {
+    const requestInit: RequestInit = {
       ...init,
       signal: controller.signal,
-    });
+    };
+
+    if (isWebAuthClient() && !requestInit.credentials) {
+      requestInit.credentials = "include";
+    }
+
+    return await fetch(input, requestInit);
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
       throw new AuthApiError(
@@ -287,8 +301,9 @@ async function handleAuthMutation(
   });
 
   const token = response.headers.get("set-auth-token");
+  const sessionToken = isWebAuthClient() ? null : token;
 
-  if (!token) {
+  if (!isWebAuthClient() && !token) {
     throw new AuthApiError(
       "Login succeeded but the backend did not return set-auth-token.",
       response.status,
@@ -296,7 +311,7 @@ async function handleAuthMutation(
     );
   }
 
-  const session = await getSessionInternal(token);
+  const session = await getSessionInternal(sessionToken);
 
   if (!session) {
     throw new AuthApiError(
@@ -307,7 +322,7 @@ async function handleAuthMutation(
   }
 
   return {
-    token,
+    token: sessionToken,
     session,
   } satisfies AuthMutationResult;
 }
@@ -318,7 +333,6 @@ export const authApi = {
       return await handleAuthMutation("/sign-in/email", {
         email: input.email.trim(),
         password: input.password,
-        rememberMe: input.rememberMe ?? true,
       });
     } catch (error) {
       throw toAuthApiError(error, "Failed to sign in.");
@@ -346,7 +360,7 @@ export const authApi = {
   },
 
   async signOut(token: string | null) {
-    if (!token) {
+    if (!token && !isWebAuthClient()) {
       return;
     }
 
@@ -358,7 +372,9 @@ export const authApi = {
           },
           { includeNativeOrigin }
         );
-        headers.set("Authorization", `Bearer ${token}`);
+        if (token) {
+          headers.set("Authorization", `Bearer ${token}`);
+        }
 
         const response = await fetchWithTimeout(getAuthUrl("/sign-out"), {
           method: "POST",

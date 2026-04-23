@@ -36,7 +36,6 @@ export type SessionEnvelope = {
 export type EmailSignInInput = {
   email: string;
   password: string;
-  rememberMe?: boolean;
 };
 
 export type EmailSignUpInput = {
@@ -46,7 +45,7 @@ export type EmailSignUpInput = {
 };
 
 export type AuthMutationResult = {
-  token: string;
+  token: string | null;
   session: SessionEnvelope;
 };
 

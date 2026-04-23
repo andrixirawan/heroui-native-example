@@ -6,6 +6,10 @@ import type { SessionEnvelope } from "@/modules/auth/types/auth-types";
 const TOKEN_KEY = "heroui-native-example.session-token";
 const SESSION_KEY = "heroui-native-example.session-cache";
 
+function usesCookieSession() {
+  return Platform.OS === "web";
+}
+
 function canUseWebStorage() {
   return (
     Platform.OS === "web" &&
@@ -56,14 +60,26 @@ function parseSession(value: string | null) {
 
 export const authStorage = {
   getToken() {
+    if (usesCookieSession()) {
+      return Promise.resolve<string | null>(null);
+    }
+
     return getItem(TOKEN_KEY);
   },
 
   setToken(token: string) {
+    if (usesCookieSession()) {
+      return Promise.resolve();
+    }
+
     return setItem(TOKEN_KEY, token);
   },
 
   clearToken() {
+    if (usesCookieSession()) {
+      return Promise.resolve();
+    }
+
     return deleteItem(TOKEN_KEY);
   },
 

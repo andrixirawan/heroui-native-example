@@ -1,5 +1,5 @@
 import { createContext, useEffect, useRef, useState, type ReactNode } from "react";
-import { AppState } from "react-native";
+import { AppState, Platform } from "react-native";
 
 import { authApi, AuthApiError, getApiBaseUrl } from "@/modules/auth/lib/auth-api";
 import { authStorage } from "@/modules/auth/lib/auth-storage";
@@ -9,6 +9,8 @@ import type {
   EmailSignUpInput,
   SessionEnvelope,
 } from "@/modules/auth/types/auth-types";
+
+const CAN_RESTORE_SESSION_WITHOUT_STORED_TOKEN = Platform.OS === "web";
 
 type AuthContextValue = {
   apiBaseUrl: string | null;
@@ -124,7 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      if (!token) {
+      if (!token && !CAN_RESTORE_SESSION_WITHOUT_STORED_TOKEN) {
         await authStorage.clearSessionSnapshot();
 
         if (!isMounted) {
@@ -239,7 +241,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const promise = (async () => {
       const token = await authStorage.getToken();
 
-      if (!token) {
+      if (!token && !CAN_RESTORE_SESSION_WITHOUT_STORED_TOKEN) {
         await authStorage.clearSessionSnapshot();
         setState((current) => ({
           ...current,
@@ -314,8 +316,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  async function persistAuthenticatedSession(session: SessionEnvelope, token: string) {
-    await Promise.all([authStorage.setToken(token), authStorage.setSessionSnapshot(session)]);
+  async function persistAuthenticatedSession(session: SessionEnvelope, token: string | null) {
+    await Promise.all([
+      token ? authStorage.setToken(token) : authStorage.clearToken(),
+      authStorage.setSessionSnapshot(session),
+    ]);
   }
 
   async function signIn(input: EmailSignInInput) {

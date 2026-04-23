@@ -61,7 +61,6 @@ export function SignInScreen() {
       await signIn({
         email,
         password,
-        rememberMe: true,
       });
       router.replace("/demo" as Href);
     } catch (error) {
