@@ -963,7 +963,34 @@ Alasannya:
 - plugin Expo server belum ada
 - plugin 2FA belum ada
 
-## 15. Rekomendasi Final untuk Tim Frontend
+## 15. Pertanyaan / Konfirmasi ke Tim Backend
+
+Sebelum flow auth dianggap final, ada beberapa hal yang sebaiknya dikonfirmasi dulu ke backend agar implementasi frontend tidak menebak-nebak kontrak:
+
+| Area | Asumsi frontend saat ini | Yang perlu dikonfirmasi ke backend |
+|---|---|---|
+| Origin untuk Expo native | Native bearer flow default tidak perlu kirim header `Origin` | Apakah backend memang mengizinkan request native tanpa `Origin`, atau justru mewajibkannya pada endpoint tertentu? |
+| Nilai origin yang sah | Jika `Origin` diperlukan, nilainya dikirim lewat `EXPO_PUBLIC_AUTH_ORIGIN` | URL origin mana saja yang harus di-whitelist per environment: local Expo, dev client, preview build, production app, atau web app? |
+| Kontrak `sign-in` / `sign-up` sukses | Frontend mengandalkan status `200`, lalu membaca header `set-auth-token` | Apakah `set-auth-token` dijamin selalu ada untuk login/signup sukses di mobile? Jika tidak, fallback resmi yang diharapkan apa? |
+| Source of truth session | Setelah login/register, frontend selalu memanggil `GET /api/auth/get-session` | Apakah ini memang flow canonical yang diinginkan backend untuk semua client, termasuk setelah login ulang dan app resume? |
+| Perilaku `get-session` saat token bermasalah | Frontend menganggap `401` atau respons non-valid berarti sesi tidak aktif | Saat token expired, revoked, atau session sudah dihapus, apakah backend harus mengembalikan `401`, `200 null`, atau format lain yang konsisten? |
+| Logout | Frontend tetap menghapus token lokal walau request `sign-out` gagal | Apakah `POST /api/auth/sign-out` harus idempotent? Jika token lama sudah invalid, apakah `401` dianggap normal/sukses dari sisi UX? |
+| Login ulang setelah logout | Login kedua seharusnya membuat sesi baru tanpa error tambahan | Apakah ada rule backend soal token rotation, revocation, atau trusted-origin check yang bisa membuat login pertama sukses tapi login berikutnya gagal? |
+| Protected API di luar `/api/auth/*` | Frontend mengirim `Authorization: Bearer <token>` ke API bisnis | Apakah semua endpoint bisnis yang butuh auth sudah konsisten menerima bearer token, atau ada subset endpoint yang masih cookie-only? |
+| Error contract | Frontend ingin memetakan pesan ke UX yang stabil | Untuk kasus `origin not allowed`, kredensial salah, akun diblokir, dan akses role ditolak, status code serta body error resmi yang harus diandalkan apa? |
+| Session lifetime | Frontend mengirim `rememberMe: true` saat login | Apa efek `rememberMe` di backend: apakah mengubah masa aktif token/session, cookie expiry, atau hanya dipakai untuk web? |
+
+Checklist keputusan yang ideal untuk dikunci bersama backend:
+
+- Native app perlu atau tidak perlu header `Origin`
+- Nilai trusted origins yang valid per environment
+- Kontrak pasti untuk `set-auth-token`
+- Respons resmi `get-session` saat token invalid/expired
+- Semantik `sign-out` ketika session sudah tidak valid
+- Daftar endpoint bisnis yang resmi mendukung bearer auth
+- Status code dan shape error body yang stabil untuk frontend
+
+## 16. Rekomendasi Final untuk Tim Frontend
 
 ### Untuk React web
 
