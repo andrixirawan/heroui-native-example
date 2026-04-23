@@ -339,12 +339,14 @@ Yang dibutuhkan consumer:
 - Better Auth Expo client di aplikasi Expo
 - `expo-secure-store` untuk cache session dan cookie
 - header `X-Client-Type: ios`, `android`, atau `native`
+- optional Google mobile client ID bila ingin login Google native dengan `idToken`
 
 Yang dikirim:
 
 - body JSON ke endpoint auth
 - header `Cookie` dari Better Auth Expo client untuk request auth berikutnya
 - header `expo-origin` untuk membantu validasi origin native
+- untuk login Google native, app dapat mengirim `idToken.token` dan optional `idToken.accessToken` ke `signIn.social`
 
 Yang diterima:
 
@@ -462,6 +464,7 @@ Response sukses:
 - kirim `X-Client-Type: ios`, `android`, atau `native`
 - bootstrap auth state dari `useSession` / `GET /api/auth/get-session`
 - untuk request server non-auth yang butuh session, pakai cookie dari `authClient.getCookie()`
+- jika memakai Google sign-in native, siapkan Google client ID per platform dan kirim `idToken` ke Better Auth
 
 ### Untuk admin/ops
 
@@ -532,6 +535,12 @@ Mobile juga tidak butuh origin URL/domain seperti web browser. Dari sisi integra
 
 - `EXPO_PUBLIC_API_URL`
   Base URL ke `jimun-server`, misalnya `https://api.example.com`.
+- `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`
+  Google OAuth client id untuk login native di iOS.
+- `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID`
+  Google OAuth client id untuk login native di Android.
+- `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`
+  Optional. Berguna bila app Expo web juga ingin memakai Google client ID yang sama di layer client.
 
 Header `Origin` atau `Referer` tambahan yang kadang ikut terbawa dari tooling mobile/dev tidak perlu di-whitelist manual selama request tetap mengirim `X-Client-Type: ios|android|native`.
 
@@ -539,6 +548,8 @@ Contoh:
 
 ```env
 EXPO_PUBLIC_API_URL=https://api.example.com
+EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=your-google-ios-client-id
+EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=your-google-android-client-id
 ```
 
 ### 11.4 Ringkas per pihak
@@ -547,7 +558,7 @@ EXPO_PUBLIC_API_URL=https://api.example.com
 | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | Auth server      | `DATABASE_URL`, `BETTER_AUTH_URL` atau pasangan `BETTER_AUTH_URL_PRODUCTION` / `BETTER_AUTH_URL_DEVELOPMENT`, lalu `BETTER_AUTH_SECRET` |
 | Web consumer     | `NEXT_PUBLIC_API_URL`                                                                                                                   |
-| Mobile consumer  | `EXPO_PUBLIC_API_URL`                                                                                                                   |
+| Mobile consumer  | `EXPO_PUBLIC_API_URL`, lalu `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` / `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` bila memakai Google native sign-in |
 | Jika beda domain | tambahkan origin consumer ke `BETTER_AUTH_TRUSTED_ORIGINS` atau `API_ALLOWED_ORIGINS` di auth server                                    |
 
 ## 12. Ringkasan Praktis

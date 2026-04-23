@@ -7,6 +7,7 @@ import {
   getSessionStoreSnapshot,
 } from "@/modules/auth/lib/auth-client";
 import { AuthApiError, toAuthApiError } from "@/modules/auth/lib/auth-errors";
+import { useGoogleIdTokenSignIn } from "@/modules/auth/lib/google-id-token-sign-in";
 import type {
   AuthStatus,
   EmailSignInInput,
@@ -131,6 +132,7 @@ function ConfiguredAuthProvider({
   children: ReactNode;
 }) {
   const sessionState = authClient.useSession();
+  const googleIdTokenSignIn = useGoogleIdTokenSignIn();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [lastSyncAt, setLastSyncAt] = useState<number | null>(null);
   const [lastSyncError, setLastSyncError] = useState<string | null>(null);
@@ -258,10 +260,28 @@ function ConfiguredAuthProvider({
     setPendingAction("google-sign-in");
 
     try {
-      const result = await authClient.signIn.social({
-        provider: "google",
-        callbackURL: getGoogleAuthCallbackURL(),
-      });
+      const result =
+        Platform.OS !== "web" &&
+        googleIdTokenSignIn.isConfigured &&
+        googleIdTokenSignIn.isReady &&
+        googleIdTokenSignIn.signIn
+          ? await (async () => {
+              const googleToken = await googleIdTokenSignIn.signIn();
+
+              return authClient.signIn.social({
+                provider: "google",
+                callbackURL: getGoogleAuthCallbackURL(),
+                idToken: {
+                  token: googleToken.token,
+                  accessToken: googleToken.accessToken,
+                  nonce: googleToken.nonce,
+                },
+              });
+            })()
+          : await authClient.signIn.social({
+              provider: "google",
+              callbackURL: getGoogleAuthCallbackURL(),
+            });
 
       if (result.error) {
         throw toAuthApiError(result.error, "Failed to sign in with Google.");
