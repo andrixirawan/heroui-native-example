@@ -9,6 +9,8 @@ import type {
 
 const AUTH_BASE_PATH = "/api/auth";
 const REQUEST_TIMEOUT_MS = 8000;
+const SHOULD_INCLUDE_NATIVE_ORIGIN =
+  process.env.EXPO_PUBLIC_AUTH_INCLUDE_ORIGIN?.trim().toLowerCase() === "true";
 
 function getClientType() {
   if (Platform.OS === "ios") {
@@ -53,6 +55,10 @@ function getNativeOrigin() {
   }
 
   return toUrlOrigin(getApiBaseUrl());
+}
+
+function shouldIncludeNativeOriginHeader() {
+  return Platform.OS !== "web" && SHOULD_INCLUDE_NATIVE_ORIGIN && Boolean(getNativeOrigin());
 }
 
 function isOriginErrorMessage(message: string | null | undefined) {
@@ -147,7 +153,7 @@ function createBaseHeaders(
   const headers = new Headers(extraHeaders);
   headers.set("X-Client-Type", getClientType());
 
-  if (Platform.OS !== "web" && options?.includeNativeOrigin !== false) {
+  if (options?.includeNativeOrigin !== false && shouldIncludeNativeOriginHeader()) {
     const nativeOrigin = getNativeOrigin();
     if (nativeOrigin) {
       headers.set("Origin", nativeOrigin);
@@ -173,7 +179,7 @@ function toAuthApiError(error: unknown, fallbackMessage: string) {
   if (error instanceof AuthApiError) {
     if (isOriginErrorMessage(error.message)) {
       return new AuthApiError(
-        "Origin aplikasi belum diizinkan di backend. Tambahkan origin ke trusted origins server dan set EXPO_PUBLIC_AUTH_ORIGIN dengan URL http/https yang sama.",
+        "Origin aplikasi belum diizinkan di backend. Untuk app native biasanya header Origin tidak perlu dikirim. Aktifkan EXPO_PUBLIC_AUTH_INCLUDE_ORIGIN=true hanya jika backend memang mewajibkannya, lalu set EXPO_PUBLIC_AUTH_ORIGIN ke URL http/https yang sudah di-whitelist.",
         error.status,
         error.code
       );
@@ -191,8 +197,7 @@ function toAuthApiError(error: unknown, fallbackMessage: string) {
 
 function shouldRetryWithoutOrigin(error: unknown) {
   return (
-    Platform.OS !== "web" &&
-    Boolean(getNativeOrigin()) &&
+    shouldIncludeNativeOriginHeader() &&
     error instanceof AuthApiError &&
     isOriginErrorMessage(error.message)
   );
