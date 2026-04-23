@@ -1,4 +1,5 @@
 import { createContext, useEffect, useState, type ReactNode } from "react";
+import { Platform } from "react-native";
 
 import {
   authClient,
@@ -13,7 +14,15 @@ import type {
   SessionEnvelope,
 } from "@/modules/auth/types/auth-types";
 
-type PendingAction = "sign-in" | "sign-up" | "sign-out" | "refresh" | null;
+type PendingAction =
+  | "sign-in"
+  | "sign-up"
+  | "google-sign-in"
+  | "sign-out"
+  | "refresh"
+  | null;
+
+const GOOGLE_AUTH_CALLBACK_PATH = "/sign-in";
 
 type AuthContextValue = {
   apiBaseUrl: string | null;
@@ -28,6 +37,7 @@ type AuthContextValue = {
     silent?: boolean;
   }) => Promise<SessionEnvelope | null>;
   session: SessionEnvelope | null;
+  signInWithGoogle: () => Promise<void>;
   signIn: (input: EmailSignInInput) => Promise<void>;
   signOut: () => Promise<void>;
   signUp: (input: EmailSignUpInput) => Promise<void>;
@@ -53,6 +63,9 @@ function createConfigError(apiBaseUrl: string | null): AuthContextValue {
       return null;
     },
     session: null,
+    async signInWithGoogle() {
+      throw new AuthApiError(missingApiUrlMessage, 0, "AUTH_CONFIG_ERROR");
+    },
     async signIn() {
       throw new AuthApiError(missingApiUrlMessage, 0, "AUTH_CONFIG_ERROR");
     },
@@ -78,6 +91,18 @@ function getStatus(
   }
 
   return session ? "authenticated" : "anonymous";
+}
+
+function getGoogleAuthCallbackURL() {
+  if (
+    Platform.OS === "web" &&
+    typeof window !== "undefined" &&
+    window.location?.origin
+  ) {
+    return `${window.location.origin}${GOOGLE_AUTH_CALLBACK_PATH}`;
+  }
+
+  return GOOGLE_AUTH_CALLBACK_PATH;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -228,6 +253,44 @@ function ConfiguredAuthProvider({
     }
   }
 
+  async function signInWithGoogle() {
+    setErrorMessage(null);
+    setPendingAction("google-sign-in");
+
+    try {
+      const result = await authClient.signIn.social({
+        provider: "google",
+        callbackURL: getGoogleAuthCallbackURL(),
+      });
+
+      if (result.error) {
+        throw toAuthApiError(result.error, "Failed to sign in with Google.");
+      }
+
+      const nextSession = await syncSession(
+        "Google sign-in succeeded but session could not be loaded from /get-session.",
+      );
+
+      if (!nextSession) {
+        throw new AuthApiError(
+          "Google sign-in succeeded but session could not be loaded from /get-session.",
+          0,
+          "MISSING_SESSION",
+        );
+      }
+
+      setLastSyncAt(Date.now());
+      setLastSyncError(null);
+    } catch (error) {
+      const authError = toAuthApiError(error, "Failed to sign in with Google.");
+
+      setErrorMessage(authError.message);
+      throw authError;
+    } finally {
+      setPendingAction(null);
+    }
+  }
+
   async function signUp(input: EmailSignUpInput) {
     setErrorMessage(null);
     setPendingAction("sign-up");
@@ -307,6 +370,7 @@ function ConfiguredAuthProvider({
     lastSyncError,
     refreshSession,
     session,
+    signInWithGoogle,
     signIn,
     signOut,
     signUp,

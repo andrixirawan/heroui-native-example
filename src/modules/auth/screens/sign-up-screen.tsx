@@ -28,13 +28,20 @@ import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { AuthApiError } from "@/modules/auth/lib/auth-errors";
 
 export function SignUpScreen() {
-  const { configError, errorMessage, refreshSession, signUp } = useAuth();
+  const {
+    configError,
+    errorMessage,
+    refreshSession,
+    signInWithGoogle,
+    signUp,
+  } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const emailInputRef = useRef<TextInput | null>(null);
   const passwordInputRef = useRef<TextInput | null>(null);
@@ -82,7 +89,28 @@ export function SignUpScreen() {
     }
   }
 
+  async function handleGoogleSignIn() {
+    setSubmitError(null);
+    setIsGoogleSubmitting(true);
+    Keyboard.dismiss();
+
+    try {
+      await signInWithGoogle();
+      router.replace("/demo" as Href);
+    } catch (error) {
+      setSubmitError(
+        error instanceof AuthApiError
+          ? error.message
+          : "Tidak bisa lanjut dengan Google sekarang. Coba lagi.",
+      );
+    } finally {
+      setIsGoogleSubmitting(false);
+    }
+  }
+
   const helperError = configError ?? submitError ?? errorMessage;
+  const isActionDisabled =
+    Boolean(configError) || isSubmitting || isGoogleSubmitting;
 
   return (
     <KeyboardAvoidingView
@@ -180,14 +208,36 @@ export function SignUpScreen() {
               {helperError ? <FieldError>{helperError}</FieldError> : null}
             </TextField>
 
-            <Button
-              isDisabled={Boolean(configError) || isSubmitting}
-              onPress={handleSubmit}
-            >
+            <Button isDisabled={isActionDisabled} onPress={handleSubmit}>
               {isSubmitting ? (
                 <ActivityIndicator color="white" />
               ) : (
                 <Button.Label>Create account</Button.Label>
+              )}
+            </Button>
+
+            <View className="flex-row items-center gap-3">
+              <View className="h-px flex-1 bg-separator" />
+              <Text className="text-xs font-semibold tracking-[1.8px] text-muted-foreground uppercase">
+                or
+              </Text>
+              <View className="h-px flex-1 bg-separator" />
+            </View>
+
+            <Button
+              variant="secondary"
+              isDisabled={isActionDisabled}
+              onPress={() => void handleGoogleSignIn()}
+            >
+              {isGoogleSubmitting ? (
+                <ActivityIndicator />
+              ) : (
+                <>
+                  <Text className="text-base font-semibold text-foreground">
+                    G
+                  </Text>
+                  <Button.Label>Continue with Google</Button.Label>
+                </>
               )}
             </Button>
 
