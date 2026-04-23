@@ -1,183 +1,228 @@
-# Auth API Integration Guide
+# Auth Strategy
 
-Dokumen ini menjelaskan kontrak auth yang saat ini aktif di repo `jimun-server`, bagaimana endpoint Better Auth diakses dari aplikasi luar, dan pola implementasi yang disarankan untuk:
+Dokumen ini menetapkan bahwa `jimun-server` memakai auth **session-based** dengan Better Auth, lalu menjelaskan bagaimana auth server ini dikonsumsi oleh app lain, baik web maupun mobile.
 
-- React web
-- React Native Expo
+Fokus dokumen ini adalah kontrak yang benar-benar didukung implementasi repo saat ini.
 
-Dokumen ini sengaja fokus ke endpoint auth yang benar-benar relevan untuk konsumsi app luar. Fitur seperti email verification, password reset, dan social login belum diaktifkan di config repo ini, jadi belum dijadikan kontrak utama.
+## 1. Keputusan Arsitektur
 
-## 1. Ringkasan Arsitektur Auth Saat Ini
+- Sumber identitas utama adalah session yang disimpan di database tabel `session`.
+- Session browser memakai cookie `better-auth.session_token`.
+- Session mobile dan non-browser boleh memakai bearer token dari header response `set-auth-token`.
+- Semua session dicatat dengan metadata `clientType` agar bisa dipantau per device/surface.
+- Admin dapat melihat session aktif dan melakukan revoke per session atau per user.
 
-Backend ini memakai:
-
-- `better-auth` sebagai auth engine
-- route auth catch-all di `/api/auth/*`
-- session cookie `better-auth.session_token`
-- plugin `bearer()` sehingga auth juga bisa dipakai lewat `Authorization: Bearer <token>`
-- plugin `admin()` untuk role admin
-
-Sumber implementasi utama:
+Implementasi utama ada di:
 
 - `src/lib/auth.ts`
 - `src/app/api/auth/[...all]/route.ts`
 - `src/lib/auth-api.ts`
-- `src/lib/auth-client.ts`
 - `src/lib/auth-platform.ts`
 - `src/lib/api-cors.ts`
+- `src/app/api/admin/users/route.ts`
+- `src/app/api/admin/sessions/[sessionId]/revoke/route.ts`
+- `src/app/api/admin/users/[userId]/revoke-sessions/route.ts`
 - `prisma/schema.prisma`
 
-Implikasi penting:
+## 2. Apa yang Disimpan di Session
 
-1. Browser web paling natural memakai cookie session.
-2. Mobile paling mudah memakai bearer token dari header `set-auth-token`.
-3. API bisnis internal repo ini sudah mendukung dua mode:
-   - cookie auth
-   - bearer auth
+Setiap session menyimpan data inti berikut:
 
-## 2. Base URL dan Base Path
+- `id`
+- `userId`
+- `token`
+- `expiresAt`
+- `createdAt`
+- `updatedAt`
+- `ipAddress`
+- `userAgent`
+- `clientType`
+- `impersonatedBy`
 
-Base path auth adalah:
+`clientType` diisi dari header `X-Client-Type`, lalu dinormalisasi menjadi:
+
+- `web`
+- `ios`
+- `android`
+- `native`
+- `unknown`
+
+Artinya project ini memang siap untuk:
+
+- membedakan session web vs app
+- monitoring device login aktif
+- revoke satu session tertentu
+- revoke semua session milik satu user
+
+## 3. Base URL, Base Path, dan Origin
+
+Base path auth selalu:
 
 ```text
 /api/auth
 ```
 
-Contoh full URL:
+Contoh:
 
 ```text
 https://api.example.com/api/auth/sign-in/email
 https://api.example.com/api/auth/get-session
 ```
 
-Nilai base URL di server dibaca dari:
+Base URL server dibaca dari:
 
 - `BETTER_AUTH_URL`
 - atau `BETTER_AUTH_URL_PRODUCTION`
 - atau `BETTER_AUTH_URL_DEVELOPMENT`
 
-## 3. CORS dan Origin yang Diizinkan
-
-Route auth dibungkus CORS custom. Origin hanya diterima bila match salah satu dari:
+Origin yang diizinkan dibaca dari:
 
 - `BETTER_AUTH_URL`
 - `BETTER_AUTH_TRUSTED_ORIGINS`
 - `API_ALLOWED_ORIGINS`
 
-Header penting:
+Catatan penting untuk web beda domain:
 
-- request:
-  - `Content-Type: application/json`
-  - `Authorization: Bearer <token>` untuk mode mobile/bearer
-  - `X-Client-Type: web | ios | android | native`
-- response:
-  - `set-auth-token: <session_token>` jika login/signup berhasil dan plugin bearer aktif
+- Browser cross-origin harus pakai `credentials: "include"` atau `withCredentials: true`.
+- Origin frontend harus masuk trusted origins.
+- Di production cookie diset `SameSite=None` dan `Secure=true`, jadi flow web beda domain ditujukan untuk HTTPS production.
+- Di non-production cookie diset `SameSite=Lax`, jadi jangan jadikan cross-domain local dev sebagai kontrak utama untuk web.
 
-Catatan:
+Catatan untuk mobile:
 
-- server expose header `set-auth-token`, jadi frontend bisa membacanya dari JavaScript
-- `OPTIONS` preflight sudah ditangani
-- browser cross-origin wajib kirim `credentials: "include"` jika memakai cookie
-- untuk React Native/Expo, default yang paling aman adalah tidak mengirim header `Origin`
-- jika backend Anda memang mewajibkan `Origin`, set `EXPO_PUBLIC_AUTH_INCLUDE_ORIGIN=true` dan isi `EXPO_PUBLIC_AUTH_ORIGIN` dengan URL http/https yang sudah di-whitelist di trusted origins
+- Mobile native tidak punya konsep origin browser seperti web app.
+- Mobile tidak perlu bergantung pada cookie.
+- Flow yang direkomendasikan adalah bearer token.
+- Dalam flow normal mobile, Anda tidak perlu menyiapkan origin URL/domain khusus hanya untuk auth.
+- Hanya jika mobile client atau layer tertentu benar-benar ikut mengirim header `Origin`, origin itu harus di-whitelist.
 
-## 4. Header `X-Client-Type`
+## 4. Strategi Konsumsi per Client
 
-Server membaca header:
+| Client              | Transport auth yang direkomendasikan | Yang disimpan di client                   | Catatan                                                   |
+| ------------------- | ------------------------------------ | ----------------------------------------- | --------------------------------------------------------- |
+| Web same-domain     | Cookie session                       | Tidak perlu simpan token manual           | Paling sederhana                                          |
+| Web beda domain     | Cookie session                       | Tidak perlu simpan token manual           | Wajib trusted origin, HTTPS, dan `credentials: "include"` |
+| Mobile / native app | Bearer session token                 | Simpan `set-auth-token` di secure storage | Tidak bergantung pada cookie browser                      |
 
-```text
-X-Client-Type
+## 5. Header yang Perlu Dikirim
+
+Header umum:
+
+- `Content-Type: application/json` untuk request body JSON
+- `X-Client-Type: web | ios | android | native`
+
+Header auth:
+
+- Web: browser akan mengirim cookie session bila request memakai credentials
+- Mobile: kirim `Authorization: Bearer <session_token>`
+
+Header response yang penting:
+
+- `set-auth-token: <session_token>`
+
+Header `set-auth-token` sudah di-expose oleh CORS, jadi bisa dibaca client JavaScript.
+
+## 6. Flow Auth yang Canonical
+
+### 6.1 Web
+
+1. Client memanggil `POST /api/auth/sign-in/email` atau `POST /api/auth/sign-up/email`.
+2. Client mengirim `X-Client-Type: web`.
+3. Browser menerima cookie `better-auth.session_token`.
+4. Client langsung memanggil `GET /api/auth/get-session`.
+5. Response `get-session` menjadi source of truth user yang sedang login.
+
+### 6.2 Mobile
+
+1. Client memanggil `POST /api/auth/sign-in/email` atau `POST /api/auth/sign-up/email`.
+2. Client mengirim `X-Client-Type: ios`, `android`, atau `native`.
+3. Client membaca header `set-auth-token`.
+4. Token disimpan ke secure storage.
+5. Semua request berikutnya mengirim `Authorization: Bearer <session_token>`.
+6. Client memanggil `GET /api/auth/get-session` untuk bootstrap state user.
+
+### 6.3 Setelah Login
+
+Jangan menjadikan body response `sign-in` atau `sign-up` sebagai source of truth utama. Kontrak yang paling stabil untuk semua client adalah:
+
+1. autentikasi berhasil
+2. session berhasil dibuat
+3. client memanggil `GET /api/auth/get-session`
+4. state auth diambil dari response `get-session`
+
+## 7. Kontrak Endpoint Auth
+
+### 7.1 `POST /api/auth/sign-up/email`
+
+Tujuan: membuat akun baru dengan email/password.
+
+Request body:
+
+```json
+{
+  "name": "Jane Doe",
+  "email": "jane@example.com",
+  "password": "supersecret123"
+}
 ```
 
-Nilai yang didukung:
+Request headers:
 
-- `web`
-- `ios`
-- `android`
-- `native`
+- Web: `Content-Type`, `X-Client-Type: web`
+- Mobile: `Content-Type`, `X-Client-Type: ios|android|native`
 
-Nilai ini disimpan ke `session.clientType`, jadi berguna untuk audit device/session.
+Success response:
 
-Rekomendasi:
+- status `200`
+- session dibuat
+- web menerima cookie session
+- mobile dapat membaca header `set-auth-token`
 
-- React web: kirim `X-Client-Type: web`
-- Expo iOS: kirim `X-Client-Type: ios`
-- Expo Android: kirim `X-Client-Type: android`
-- jika tidak ingin bedakan platform: `X-Client-Type: native`
+Error yang perlu diantisipasi:
 
-## 5. Mode Auth yang Direkomendasikan
+- `400` / `422` untuk payload tidak valid
+- `409` bila email sudah dipakai
 
-### 5.1 Web
+### 7.2 `POST /api/auth/sign-in/email`
 
-Pakai cookie session.
+Tujuan: login dengan email/password.
 
-Kenapa:
+Request body:
 
-- paling cocok dengan Better Auth di browser
-- `HttpOnly` cookie tidak perlu disimpan manual di local storage
-- flow `useSession()` / `getSession()` lebih natural
-
-Kebutuhan client:
-
-- `credentials: "include"` atau `withCredentials: true`
-- jika beda domain, origin frontend harus masuk trusted origins
-
-### 5.2 Mobile Expo
-
-Untuk repo ini, mode paling praktis adalah:
-
-- login ke endpoint auth
-- baca header `set-auth-token`
-- simpan token ke secure storage
-- kirim `Authorization: Bearer <token>` ke auth endpoint dan protected API lain
-
-Kenapa ini paling praktis:
-
-- repo ini sudah mengaktifkan plugin `bearer()`
-- protected API internal (`/api/profile`, `/api/onboarding`, `/api/blogs`, dst) sudah mengubah bearer token menjadi cookie-compatible auth di server
-- React Native tidak sefleksibel browser untuk cookie cross-origin manual
-
-Jika nanti ingin full native Better Auth flow dengan cookie sync, `@better-auth/expo` bisa dipakai, tetapi saat ini plugin Expo belum dipasang di server repo ini.
-
-## 6. Endpoint Auth yang Aktif dan Relevan
-
-| Endpoint | Method | Untuk | Auth masuk | Catatan |
-|---|---|---|---|---|
-| `/api/auth/ok` | `GET` | health check auth | tidak | cocok untuk smoke test |
-| `/api/auth/sign-up/email` | `POST` | register email/password | tidak | otomatis sign-in setelah register, karena `autoSignIn` default aktif |
-| `/api/auth/sign-in/email` | `POST` | login email/password | tidak | sukses akan set cookie dan expose `set-auth-token` |
-| `/api/auth/sign-out` | `POST` | logout current session | cookie atau bearer | hapus session aktif |
-| `/api/auth/get-session` | `GET` | ambil current session | cookie atau bearer | endpoint paling stabil untuk source of truth session |
-
-Endpoint Better Auth lain seperti password reset, email verification, social login, dan 2FA belum dijadikan kontrak utama di repo ini karena config pendukungnya belum dipasang.
-
-## 7. Kontrak Respons yang Aman Dipakai Frontend
-
-Ada dua jenis kontrak:
-
-### 7.1 Kontrak transport
-
-Ini yang paling stabil untuk `sign-up` dan `sign-in`:
-
-- status `200` saat sukses
-- cookie session diset oleh server
-- header `set-auth-token` tersedia bila plugin bearer aktif
-
-### 7.2 Kontrak data session
-
-Untuk membaca user login saat ini, gunakan:
-
-```text
-GET /api/auth/get-session
+```json
+{
+  "email": "jane@example.com",
+  "password": "supersecret123"
+}
 ```
 
-Jangan jadikan body respons `sign-in` atau `sign-up` sebagai satu-satunya source of truth untuk state user. Setelah login/register sukses, langsung panggil `get-session`.
+Request headers:
 
-Itu pendekatan paling aman untuk web dan mobile.
+- Web: `Content-Type`, `X-Client-Type: web`
+- Mobile: `Content-Type`, `X-Client-Type: ios|android|native`
 
-## 8. Bentuk Data Session
+Success response:
 
-Berikut bentuk session yang aman diasumsikan berdasarkan config Better Auth dan schema Prisma repo ini:
+- status `200`
+- session dibuat
+- web menerima cookie session
+- mobile dapat membaca header `set-auth-token`
+
+Error yang perlu diantisipasi:
+
+- `401` bila credential salah
+- `400` / `422` bila payload tidak valid
+
+### 7.3 `GET /api/auth/get-session`
+
+Tujuan: mengambil source of truth session aktif.
+
+Request headers:
+
+- Web: cookie session otomatis terkirim bila request memakai credentials
+- Mobile: `Authorization: Bearer <session_token>`
+
+Success response saat session aktif:
 
 ```json
 {
@@ -211,810 +256,302 @@ Berikut bentuk session yang aman diasumsikan berdasarkan config Better Auth dan 
 }
 ```
 
+Response saat belum ada session:
+
+```json
+null
+```
+
+Ini endpoint yang harus dipakai untuk:
+
+- bootstrap auth state
+- refresh auth state setelah app reload
+- validasi apakah token/cookie masih aktif
+
+### 7.4 `POST /api/auth/sign-out`
+
+Tujuan: logout session yang sedang dipakai saat request.
+
+Request headers:
+
+- Web: cookie session
+- Mobile: `Authorization: Bearer <session_token>`
+
+Success response:
+
+- status `200`
+- session saat ini dihapus / tidak valid lagi
+
 Catatan:
 
-- `user.firstName`, `user.lastName`, `user.phoneNumber` adalah `additionalFields`
-- `session.clientType` adalah `additionalFields`
-- `role`, `banned`, `banReason`, `banExpires` datang dari plugin admin + schema user
+- `sign-out` hanya memutus current session.
+- Untuk memutus session lain milik user, gunakan endpoint admin revoke.
 
-## 9. OpenAPI / Swagger Ringkas
+## 8. Perbedaan Integrasi Web vs Mobile
 
-Snippet berikut bisa dijadikan dasar Swagger/OpenAPI untuk frontend integration.
+### 8.1 Web same-domain
 
-```yaml
-openapi: 3.0.3
-info:
-  title: Jimun Auth API
-  version: 1.0.0
-  description: |
-    Kontrak auth aktif untuk integrasi web React dan React Native Expo.
-    Flow yang direkomendasikan:
-    - Web: cookie session
-    - Mobile: bearer token dari header `set-auth-token`
+Yang dibutuhkan consumer:
 
-servers:
-  - url: /
-    description: Same-origin API server
+- base URL yang sama dengan app
+- request dengan `credentials: "include"`
+- header `X-Client-Type: web`
 
-tags:
-  - name: Auth
+Yang dikirim:
 
-paths:
-  /api/auth/ok:
-    get:
-      tags: [Auth]
-      summary: Health check auth engine
-      responses:
-        "200":
-          description: Better Auth route reachable
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: true
+- body JSON ke `sign-in` atau `sign-up`
+- cookie akan dikelola browser
 
-  /api/auth/sign-up/email:
-    post:
-      tags: [Auth]
-      summary: Register user with email and password
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SignUpEmailRequest"
-      responses:
-        "200":
-          description: |
-            Register berhasil. Session cookie dibuat.
-            Jika bearer plugin aktif, response header `set-auth-token` juga tersedia.
-            Untuk membaca user/session canonical, panggil `/api/auth/get-session`.
-          headers:
-            set-auth-token:
-              schema:
-                type: string
-              description: Session token untuk bearer auth mobile
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthMutationSuccess"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "409":
-          $ref: "#/components/responses/Conflict"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-
-  /api/auth/sign-in/email:
-    post:
-      tags: [Auth]
-      summary: Login user with email and password
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SignInEmailRequest"
-      responses:
-        "200":
-          description: |
-            Login berhasil. Session cookie dibuat.
-            Jika bearer plugin aktif, response header `set-auth-token` juga tersedia.
-            Untuk membaca user/session canonical, panggil `/api/auth/get-session`.
-          headers:
-            set-auth-token:
-              schema:
-                type: string
-              description: Session token untuk bearer auth mobile
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthMutationSuccess"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-
-  /api/auth/sign-out:
-    post:
-      tags: [Auth]
-      summary: Logout current session
-      security:
-        - cookieAuth: []
-        - bearerAuth: []
-      responses:
-        "200":
-          description: Logout berhasil
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthMutationSuccess"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-
-  /api/auth/get-session:
-    get:
-      tags: [Auth]
-      summary: Get current authenticated session
-      security:
-        - cookieAuth: []
-        - bearerAuth: []
-      responses:
-        "200":
-          description: Session ditemukan atau null jika belum login
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: "#/components/schemas/SessionEnvelope"
-                  - type: "null"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-
-components:
-  securitySchemes:
-    cookieAuth:
-      type: apiKey
-      in: cookie
-      name: better-auth.session_token
-      description: Better Auth session cookie
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: Better Auth Session Token
-      description: Session token yang didapat dari response header `set-auth-token`
-
-  responses:
-    BadRequest:
-      description: Request body tidak valid
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/AuthError"
-    Conflict:
-      description: Konflik data, misalnya email sudah dipakai
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/AuthError"
-    ValidationError:
-      description: Validasi Better Auth gagal
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/AuthError"
-    Unauthorized:
-      description: Belum login atau token/session tidak valid
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/AuthError"
-
-  schemas:
-    SignUpEmailRequest:
-      type: object
-      required: [name, email, password]
-      properties:
-        name:
-          type: string
-          minLength: 2
-          example: Jane Doe
-        email:
-          type: string
-          format: email
-          example: jane@example.com
-        password:
-          type: string
-          minLength: 8
-          example: supersecret123
-        image:
-          type: string
-          nullable: true
-          format: uri
-        callbackURL:
-          type: string
-          nullable: true
-          example: https://app.example.com/dashboard
-
-    SignInEmailRequest:
-      type: object
-      required: [email, password]
-      properties:
-        email:
-          type: string
-          format: email
-          example: jane@example.com
-        password:
-          type: string
-          minLength: 8
-          example: supersecret123
-        rememberMe:
-          type: boolean
-          default: true
-        callbackURL:
-          type: string
-          nullable: true
-          example: https://app.example.com/dashboard
-
-    AuthMutationSuccess:
-      type: object
-      additionalProperties: true
-      description: |
-        Better Auth dapat mengembalikan body implementasi-spesifik.
-        Kontrak stabil untuk repo ini adalah:
-        - status 200
-        - cookie auth terset
-        - optional header `set-auth-token`
-        - ambil data user final lewat `/api/auth/get-session`
-
-    SessionEnvelope:
-      type: object
-      required: [user, session]
-      properties:
-        user:
-          $ref: "#/components/schemas/AuthUser"
-        session:
-          $ref: "#/components/schemas/AuthSession"
-
-    AuthUser:
-      type: object
-      required:
-        - id
-        - name
-        - email
-        - emailVerified
-        - createdAt
-        - updatedAt
-      properties:
-        id:
-          type: integer
-          example: 12
-        name:
-          type: string
-          example: Jane Doe
-        firstName:
-          type: string
-          nullable: true
-        lastName:
-          type: string
-          nullable: true
-        email:
-          type: string
-          format: email
-        phoneNumber:
-          type: string
-          nullable: true
-        role:
-          type: string
-          nullable: true
-          example: User
-        banned:
-          type: boolean
-          nullable: true
-          example: false
-        banReason:
-          type: string
-          nullable: true
-        banExpires:
-          type: string
-          format: date-time
-          nullable: true
-        emailVerified:
-          type: boolean
-          example: false
-        image:
-          type: string
-          nullable: true
-          format: uri
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-
-    AuthSession:
-      type: object
-      required:
-        - id
-        - userId
-        - expiresAt
-        - createdAt
-        - updatedAt
-      properties:
-        id:
-          type: integer
-          example: 31
-        userId:
-          type: integer
-          example: 12
-        expiresAt:
-          type: string
-          format: date-time
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-        ipAddress:
-          type: string
-          nullable: true
-        userAgent:
-          type: string
-          nullable: true
-        clientType:
-          type: string
-          nullable: true
-          example: web
-        impersonatedBy:
-          type: string
-          nullable: true
-
-    AuthError:
-      type: object
-      properties:
-        code:
-          type: string
-          nullable: true
-          example: INVALID_EMAIL_OR_PASSWORD
-        message:
-          type: string
-          nullable: true
-          example: Invalid email or password
-        error:
-          type: string
-          nullable: true
-          example: Unauthorized
-```
-
-## 10. Detail Endpoint per Endpoint
-
-### 10.1 `GET /api/auth/ok`
-
-Tujuan:
-
-- memastikan auth route hidup
-
-Contoh:
-
-```bash
-curl -X GET https://api.example.com/api/auth/ok
-```
-
-Ekspektasi:
-
-- `200 OK`
-- body ringan dari Better Auth
-
-### 10.2 `POST /api/auth/sign-up/email`
-
-Dipakai untuk registrasi email/password.
-
-Request body:
-
-```json
-{
-  "name": "Jane Doe",
-  "email": "jane@example.com",
-  "password": "supersecret123"
-}
-```
-
-Catatan implementasi repo:
-
-- password minimum 8 karakter
-- name minimum 2 karakter
-- setelah signup berhasil, user otomatis login
-- jika email ada di `BETTER_AUTH_ADMIN_EMAILS`, role user bisa langsung menjadi `Admin`
-
-Respons sukses yang aman diasumsikan:
-
-- `200 OK`
-- cookie session dibuat
-- header `set-auth-token` tersedia
-
-Langkah frontend setelah sukses:
-
-1. simpan `set-auth-token` jika client mobile
-2. panggil `GET /api/auth/get-session`
-3. pakai respons `get-session` sebagai state user final
-
-Kemungkinan gagal:
-
-- `409` atau `422` bila email sudah dipakai / payload tidak valid
-- body error biasanya mengandung `message` dan kadang `code`
-
-### 10.3 `POST /api/auth/sign-in/email`
-
-Dipakai untuk login email/password.
-
-Request body:
-
-```json
-{
-  "email": "jane@example.com",
-  "password": "supersecret123",
-  "rememberMe": true
-}
-```
-
-Respons sukses yang aman diasumsikan:
-
-- `200 OK`
-- cookie session dibuat
-- header `set-auth-token` tersedia
-
-Kemungkinan gagal:
-
-- `401` kredensial salah
-- `422` payload tidak valid
-
-Frontend action setelah sukses:
-
-1. web:
-   - cukup lanjut panggil `GET /api/auth/get-session`
-2. mobile:
-   - ambil header `set-auth-token`
-   - simpan ke secure storage
-   - lanjut panggil `GET /api/auth/get-session` dengan bearer token
-
-### 10.4 `POST /api/auth/sign-out`
-
-Dipakai untuk logout session aktif.
-
-Bisa dipanggil dengan:
-
-- cookie
-- bearer token
-
-Contoh bearer:
-
-```bash
-curl -X POST https://api.example.com/api/auth/sign-out \
-  -H "Authorization: Bearer YOUR_SESSION_TOKEN"
-```
-
-Ekspektasi:
-
-- `200 OK`
-- session aktif tidak bisa dipakai lagi
-- mobile harus hapus token lokal dari secure storage
-
-### 10.5 `GET /api/auth/get-session`
-
-Ini endpoint terpenting untuk frontend.
-
-Gunakan endpoint ini untuk:
-
-- cek apakah user masih login
-- ambil data user saat bootstrap app
-- ambil source of truth setelah sign-in atau sign-up
-
-Contoh cookie mode:
-
-```bash
-curl -X GET https://api.example.com/api/auth/get-session \
-  --cookie "better-auth.session_token=YOUR_SESSION_TOKEN"
-```
-
-Contoh bearer mode:
-
-```bash
-curl -X GET https://api.example.com/api/auth/get-session \
-  -H "Authorization: Bearer YOUR_SESSION_TOKEN"
-```
-
-Respons:
-
-- jika login: object `{ user, session }`
-- jika belum login: `null`
-
-## 11. Implementasi React Web
-
-### 11.1 Prinsip
-
-Untuk web, gunakan cookie session dan `withCredentials`.
-
-Kalau web app beda domain dengan API:
-
-- origin web harus masuk ke trusted origins
-- request harus membawa credential
-
-### 11.2 Contoh client sederhana dengan `fetch`
-
-```ts
-const API_BASE = "https://api.example.com";
-
-export async function signInEmail(input: { email: string; password: string }) {
-  const response = await fetch(`${API_BASE}/api/auth/sign-in/email`, {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Client-Type": "web"
-    },
-    body: JSON.stringify({
-      email: input.email,
-      password: input.password,
-      rememberMe: true
-    })
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => null);
-    throw new Error(errorBody?.message ?? errorBody?.error ?? "Sign in failed");
-  }
-
-  return getSession();
-}
-
-export async function getSession() {
-  const response = await fetch(`${API_BASE}/api/auth/get-session`, {
-    method: "GET",
-    credentials: "include",
-    headers: {
-      "X-Client-Type": "web"
-    }
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch session");
-  }
-
-  return response.json();
-}
-
-export async function signOut() {
-  const response = await fetch(`${API_BASE}/api/auth/sign-out`, {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "X-Client-Type": "web"
-    }
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to sign out");
-  }
-}
-```
-
-### 11.3 Kalau memakai Better Auth client di web
-
-Pattern repo sekarang:
-
-```ts
-import { createAuthClient } from "better-auth/react";
-
-export const authClient = createAuthClient({
-  basePath: "/api/auth",
-  fetchOptions: {
-    headers: {
-      "X-Client-Type": "web"
-    }
-  }
-});
-```
-
-Lalu:
-
-```ts
-await authClient.signIn.email({ email, password });
-const { data: session } = await authClient.getSession();
-await authClient.signOut();
-```
-
-## 12. Implementasi React Native Expo
-
-### 12.1 Rekomendasi untuk repo ini
-
-Untuk backend ini, pola termudah adalah:
-
-1. login ke `/api/auth/sign-in/email`
-2. baca header `set-auth-token`
-3. simpan token ke `expo-secure-store`
-4. kirim `Authorization: Bearer <token>` ke endpoint auth dan protected API
-
-### 12.2 Kenapa bearer lebih cocok di sini
-
-- repo ini sudah expose `set-auth-token`
-- repo ini sudah menerima bearer token di protected API custom
-- tidak tergantung manajemen cookie browser
-
-### 12.3 Contoh util Expo
-
-```ts
-import * as SecureStore from "expo-secure-store";
-
-const API_BASE = "https://api.example.com";
-const TOKEN_KEY = "jimun.session-token";
-
-export async function signInEmail(input: { email: string; password: string }) {
-  const response = await fetch(`${API_BASE}/api/auth/sign-in/email`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Client-Type": "native"
-    },
-    body: JSON.stringify({
-      email: input.email,
-      password: input.password,
-      rememberMe: true
-    })
-  });
-
-  const errorBody = await response.clone().json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(errorBody?.message ?? errorBody?.error ?? "Sign in failed");
-  }
-
-  const token = response.headers.get("set-auth-token");
-
-  if (!token) {
-    throw new Error("Missing set-auth-token header");
-  }
-
-  await SecureStore.setItemAsync(TOKEN_KEY, token);
-
-  return getSession();
-}
-
-export async function getSession() {
-  const token = await SecureStore.getItemAsync(TOKEN_KEY);
-
-  const response = await fetch(`${API_BASE}/api/auth/get-session`, {
-    method: "GET",
-    headers: {
-      "X-Client-Type": "native",
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
-    }
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch session");
-  }
-
-  return response.json();
-}
-
-export async function signOut() {
-  const token = await SecureStore.getItemAsync(TOKEN_KEY);
-
-  const response = await fetch(`${API_BASE}/api/auth/sign-out`, {
-    method: "POST",
-    headers: {
-      "X-Client-Type": "native",
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
-    }
-  });
-
-  await SecureStore.deleteItemAsync(TOKEN_KEY);
-
-  if (!response.ok) {
-    throw new Error("Failed to sign out");
-  }
-}
-```
-
-### 12.4 Memakai token yang sama untuk protected API lain
-
-Karena repo ini sudah support bearer auth di API custom, token yang sama bisa dipakai ke endpoint seperti:
-
-- `/api/profile`
-- `/api/onboarding`
-- `/api/blogs`
-- `/api/users`
-
-Contoh:
-
-```ts
-export async function getProfile() {
-  const token = await SecureStore.getItemAsync(TOKEN_KEY);
-
-  const response = await fetch(`${API_BASE}/api/profile`, {
-    method: "GET",
-    headers: {
-      "X-Client-Type": "native",
-      Authorization: `Bearer ${token}`
-    }
-  });
-
-  if (!response.ok) {
-    const body = await response.json().catch(() => null);
-    throw new Error(body?.error ?? "Failed to fetch profile");
-  }
-
-  return response.json();
-}
-```
-
-## 13. Status Code yang Perlu Ditangani Frontend
-
-Minimum handling yang saya sarankan:
-
-| Status | Arti | Tindakan frontend |
-|---|---|---|
-| `200` | sukses | lanjut refresh session / update UI |
-| `400` | payload salah | tampilkan error form |
-| `401` | belum login / password salah / token invalid | arahkan ke login atau minta login ulang |
-| `403` | origin tidak diizinkan atau akses ditolak | cek trusted origins / role / onboarding |
-| `409` | conflict, misalnya email sudah dipakai | tampilkan pesan spesifik |
-| `422` | validasi Better Auth gagal | tampilkan pesan dari server |
-| `500` | server error | tampilkan fallback error |
-
-## 14. Endpoint yang Belum Layak Dipakai Frontend di Repo Ini
-
-Jangan dulu dijadikan kontrak publik sampai config ditambahkan:
-
-- email verification
-- request password reset
-- reset password
-- social login
-- Expo deep-link based auth flow
-- 2FA
-
-Alasannya:
-
-- config `sendVerificationEmail` belum ada
-- config `sendResetPassword` belum ada
-- provider social belum ada
-- plugin Expo server belum ada
-- plugin 2FA belum ada
-
-## 15. Pertanyaan / Konfirmasi ke Tim Backend
-
-Sebelum flow auth dianggap final, ada beberapa hal yang sebaiknya dikonfirmasi dulu ke backend agar implementasi frontend tidak menebak-nebak kontrak:
-
-| Area | Asumsi frontend saat ini | Yang perlu dikonfirmasi ke backend |
-|---|---|---|
-| Origin untuk Expo native | Native bearer flow default tidak perlu kirim header `Origin` | Apakah backend memang mengizinkan request native tanpa `Origin`, atau justru mewajibkannya pada endpoint tertentu? |
-| Nilai origin yang sah | Jika `Origin` diperlukan, nilainya dikirim lewat `EXPO_PUBLIC_AUTH_ORIGIN` | URL origin mana saja yang harus di-whitelist per environment: local Expo, dev client, preview build, production app, atau web app? |
-| Kontrak `sign-in` / `sign-up` sukses | Frontend mengandalkan status `200`, lalu membaca header `set-auth-token` | Apakah `set-auth-token` dijamin selalu ada untuk login/signup sukses di mobile? Jika tidak, fallback resmi yang diharapkan apa? |
-| Source of truth session | Setelah login/register, frontend selalu memanggil `GET /api/auth/get-session` | Apakah ini memang flow canonical yang diinginkan backend untuk semua client, termasuk setelah login ulang dan app resume? |
-| Perilaku `get-session` saat token bermasalah | Frontend menganggap `401` atau respons non-valid berarti sesi tidak aktif | Saat token expired, revoked, atau session sudah dihapus, apakah backend harus mengembalikan `401`, `200 null`, atau format lain yang konsisten? |
-| Logout | Frontend tetap menghapus token lokal walau request `sign-out` gagal | Apakah `POST /api/auth/sign-out` harus idempotent? Jika token lama sudah invalid, apakah `401` dianggap normal/sukses dari sisi UX? |
-| Login ulang setelah logout | Login kedua seharusnya membuat sesi baru tanpa error tambahan | Apakah ada rule backend soal token rotation, revocation, atau trusted-origin check yang bisa membuat login pertama sukses tapi login berikutnya gagal? |
-| Protected API di luar `/api/auth/*` | Frontend mengirim `Authorization: Bearer <token>` ke API bisnis | Apakah semua endpoint bisnis yang butuh auth sudah konsisten menerima bearer token, atau ada subset endpoint yang masih cookie-only? |
-| Error contract | Frontend ingin memetakan pesan ke UX yang stabil | Untuk kasus `origin not allowed`, kredensial salah, akun diblokir, dan akses role ditolak, status code serta body error resmi yang harus diandalkan apa? |
-| Session lifetime | Frontend mengirim `rememberMe: true` saat login | Apa efek `rememberMe` di backend: apakah mengubah masa aktif token/session, cookie expiry, atau hanya dipakai untuk web? |
-
-Checklist keputusan yang ideal untuk dikunci bersama backend:
-
-- Native app perlu atau tidak perlu header `Origin`
-- Nilai trusted origins yang valid per environment
-- Kontrak pasti untuk `set-auth-token`
-- Respons resmi `get-session` saat token invalid/expired
-- Semantik `sign-out` ketika session sudah tidak valid
-- Daftar endpoint bisnis yang resmi mendukung bearer auth
-- Status code dan shape error body yang stabil untuk frontend
-
-## 16. Rekomendasi Final untuk Tim Frontend
-
-### Untuk React web
-
-Pakai:
+Yang diterima:
 
 - cookie session
-- `credentials: "include"`
-- `X-Client-Type: web`
-- `GET /api/auth/get-session` sebagai source of truth
+- optional `set-auth-token`
+- data user final dari `GET /api/auth/get-session`
 
-### Untuk React Native Expo
+### 8.2 Web beda domain
 
-Pakai:
+Yang dibutuhkan consumer:
 
-- `POST /api/auth/sign-in/email`
-- baca `set-auth-token`
-- simpan di secure storage
-- kirim `Authorization: Bearer <token>`
-- `GET /api/auth/get-session` sebagai source of truth
+- frontend origin masuk ke `BETTER_AUTH_TRUSTED_ORIGINS` atau `API_ALLOWED_ORIGINS`
+- HTTPS production
+- request dengan `credentials: "include"`
+- header `X-Client-Type: web`
 
-### Flow standar yang aman
+Yang dikirim:
 
-1. `sign-up` atau `sign-in`
-2. jika sukses, ambil atau simpan token
-3. panggil `get-session`
-4. bootstrap state user dari respons `get-session`
-5. gunakan token/cookie yang sama untuk endpoint bisnis lainnya
+- body JSON ke endpoint auth
+- browser akan ikut mengirim cookie setelah session terbentuk
+
+Yang diterima:
+
+- `Access-Control-Allow-Origin` sesuai origin request
+- `Access-Control-Allow-Credentials: true`
+- cookie session
+- optional `set-auth-token`
+- data user final dari `GET /api/auth/get-session`
+
+### 8.3 Mobile / native app
+
+Yang dibutuhkan consumer:
+
+- base URL auth server
+- secure storage untuk menyimpan token
+- header `X-Client-Type: ios`, `android`, atau `native`
+
+Yang dikirim:
+
+- body JSON ke endpoint auth
+- `Authorization: Bearer <session_token>` untuk request setelah login
+
+Yang diterima:
+
+- header `set-auth-token` saat login/register sukses
+- data user final dari `GET /api/auth/get-session`
+
+Catatan:
+
+- Token yang sama juga bisa dipakai ke protected API lain di repo ini karena server menerima bearer token dan mengubahnya menjadi auth session context.
+
+## 9. Monitoring dan Revoke Session
+
+Fitur ini bersifat **admin-only**. Auth yang dipakai untuk endpoint admin tetap session-based, jadi admin bisa mengaksesnya dengan cookie atau bearer token yang valid.
+
+### 9.1 `GET /api/admin/users`
+
+Tujuan: monitoring user dan session aktif.
+
+Response berisi daftar user, dan untuk tiap user server mengembalikan:
+
+- `sessionCount`
+- `sessionSummary`: `offline | web | app | both | unknown`
+- `sessions`: hanya session yang belum expired
+
+Contoh bentuk item:
+
+```json
+{
+  "id": 12,
+  "name": "Jane Doe",
+  "email": "jane@example.com",
+  "phoneNumber": null,
+  "role": "User",
+  "banned": false,
+  "banReason": null,
+  "banExpires": null,
+  "emailVerified": false,
+  "createdAt": "2026-04-17T08:10:00.000Z",
+  "sessionCount": 2,
+  "sessionSummary": "both",
+  "sessions": [
+    {
+      "id": 31,
+      "clientType": "web",
+      "clientSurface": "web",
+      "userAgent": "Mozilla/5.0 ...",
+      "ipAddress": "203.0.113.10",
+      "impersonatedBy": null,
+      "createdAt": "2026-04-17T08:10:00.000Z",
+      "updatedAt": "2026-04-17T08:30:00.000Z",
+      "expiresAt": "2026-04-24T08:10:00.000Z"
+    }
+  ]
+}
+```
+
+Endpoint ini cocok untuk:
+
+- dashboard monitoring login lintas device
+- audit session web vs app
+- memilih session mana yang perlu direvoke
+
+### 9.2 `POST /api/admin/sessions/:sessionId/revoke`
+
+Tujuan: revoke satu session tertentu.
+
+Request body:
+
+```json
+{}
+```
+
+Response sukses:
+
+```json
+{
+  "message": "Session berhasil direvoke."
+}
+```
+
+### 9.3 `POST /api/admin/users/:userId/revoke-sessions`
+
+Tujuan: revoke semua session aktif milik satu user.
+
+Request body:
+
+```json
+{}
+```
+
+Response sukses:
+
+```json
+{
+  "message": "Semua session user berhasil direvoke."
+}
+```
+
+## 10. Checklist untuk App yang Mengonsumsi Auth Ini
+
+### Untuk web
+
+- pakai cookie session, bukan local storage token
+- selalu kirim `credentials: "include"`
+- kirim `X-Client-Type: web`
+- setelah login/register, panggil `GET /api/auth/get-session`
+- jika beda domain, whitelist origin dan gunakan HTTPS production
+
+### Untuk mobile
+
+- baca header `set-auth-token` setelah login/register
+- simpan token ke secure storage
+- kirim `Authorization: Bearer <session_token>` pada request berikutnya
+- kirim `X-Client-Type: ios`, `android`, atau `native`
+- bootstrap auth state dari `GET /api/auth/get-session`
+
+### Untuk admin/ops
+
+- gunakan `GET /api/admin/users` untuk monitoring session aktif
+- gunakan `POST /api/admin/sessions/:sessionId/revoke` untuk memutus satu device/login
+- gunakan `POST /api/admin/users/:userId/revoke-sessions` untuk force logout semua session user
+
+## 11. Env yang Dibutuhkan
+
+### 11.1 Auth server `jimun-server`
+
+Env yang memang dibaca langsung oleh kode repo ini:
+
+- `DATABASE_URL`
+  Dipakai Prisma adapter untuk koneksi ke database session/user.
+- `BETTER_AUTH_URL`
+  Base URL utama auth server. Jika ini ada, env URL lain tidak dipakai.
+- `BETTER_AUTH_URL_PRODUCTION`
+  Fallback base URL saat `NODE_ENV=production` dan `BETTER_AUTH_URL` tidak diisi.
+- `BETTER_AUTH_URL_DEVELOPMENT`
+  Fallback base URL saat non-production dan `BETTER_AUTH_URL` tidak diisi.
+- `BETTER_AUTH_TRUSTED_ORIGINS`
+  Daftar origin tambahan yang boleh mengakses auth lintas origin, dipisah koma.
+- `API_ALLOWED_ORIGINS`
+  Daftar origin tambahan lain yang juga dianggap trusted, dipisah koma.
+- `BETTER_AUTH_ADMIN_USER_IDS`
+  Daftar user id admin awal, dipisah koma.
+- `BETTER_AUTH_ADMIN_EMAILS`
+  Daftar email yang otomatis diberi role admin saat user dibuat, dipisah koma.
+
+Env yang tidak direferensikan eksplisit di repo ini tetapi secara praktik Better Auth biasanya tetap membutuhkan secret:
+
+- `BETTER_AUTH_SECRET` atau `AUTH_SECRET`
+  Ini saya tandai sebagai requirement Better Auth yang bersifat inferred. Saya sarankan tetap dianggap wajib di deployment auth server.
+
+Contoh minimal:
+
+```env
+DATABASE_URL=postgresql://user:password@host:5432/jimun
+BETTER_AUTH_URL=https://api.example.com
+BETTER_AUTH_TRUSTED_ORIGINS=https://app.example.com,https://admin.example.com
+API_ALLOWED_ORIGINS=https://app.example.com,https://admin.example.com
+BETTER_AUTH_SECRET=replace-with-32+-char-secret
+BETTER_AUTH_ADMIN_EMAILS=owner@example.com,ops@example.com
+```
+
+### 11.2 Web consumer
+
+Secara kontrak server, web consumer tidak punya env auth yang wajib dari sisi backend selain mengetahui base URL API yang benar. Biasanya cukup siapkan:
+
+- `NEXT_PUBLIC_API_URL`
+  Base URL ke `jimun-server`, misalnya `https://api.example.com`.
+
+Jika web app beda domain dengan auth server, origin web tersebut harus dimasukkan ke env server:
+
+- `BETTER_AUTH_TRUSTED_ORIGINS`
+- atau `API_ALLOWED_ORIGINS`
+
+Contoh:
+
+```env
+NEXT_PUBLIC_API_URL=https://api.example.com
+```
+
+### 11.3 Mobile consumer
+
+Mobile juga tidak butuh origin URL/domain seperti web browser. Dari sisi integrasi, mobile biasanya hanya butuh tahu base URL auth server. Yang biasanya dibutuhkan:
+
+- `EXPO_PUBLIC_API_URL`
+  Base URL ke `jimun-server`, misalnya `https://api.example.com`.
+
+Jika app mobile Anda sengaja mengirim header `Origin`, maka origin itu harus ikut di-whitelist di env server:
+
+- `BETTER_AUTH_TRUSTED_ORIGINS`
+- atau `API_ALLOWED_ORIGINS`
+
+Contoh:
+
+```env
+EXPO_PUBLIC_API_URL=https://api.example.com
+```
+
+### 11.4 Ringkas per pihak
+
+| Pihak            | Env minimum                                                                                                                             |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth server      | `DATABASE_URL`, `BETTER_AUTH_URL` atau pasangan `BETTER_AUTH_URL_PRODUCTION` / `BETTER_AUTH_URL_DEVELOPMENT`, lalu `BETTER_AUTH_SECRET` |
+| Web consumer     | `NEXT_PUBLIC_API_URL`                                                                                                                   |
+| Mobile consumer  | `EXPO_PUBLIC_API_URL`                                                                                                                   |
+| Jika beda domain | tambahkan origin consumer ke `BETTER_AUTH_TRUSTED_ORIGINS` atau `API_ALLOWED_ORIGINS` di auth server                                    |
+
+## 12. Ringkasan Praktis
+
+- Auth project ini tetap **session-based**.
+- Web memakai **cookie session**.
+- Mobile memakai **bearer token yang merepresentasikan session yang sama**.
+- `GET /api/auth/get-session` adalah source of truth untuk membaca state login.
+- Monitoring dan revoke session sudah tersedia lewat endpoint admin.
